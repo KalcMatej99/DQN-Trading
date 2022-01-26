@@ -90,6 +90,8 @@ class Evaluation:
         mult = 1
         for i in rate_of_return:
             mult = mult * (i + 1)
+        if len(rate_of_return) == 0:
+            return 1
         return np.power(mult, 1 / len(rate_of_return)) - 1
 
     def total_return(self):
@@ -162,13 +164,15 @@ class Evaluation:
 
         historical_sorted = np.array(np.floor(sorted(self.data[f'arithmetic_daily_return_{self.action_label}'].values)),
                                      dtype=int)
-
-        HistVAR = np.percentile(historical_sorted, significance_level)
+        try:
+            HistVAR = np.percentile(historical_sorted, significance_level)
+            print(f'Historical VAR is {HistVAR}')
+        except:
+            print("Error during calculating historical variance")
 
         var_cov_VAR_95 = -1.65 * std  # For 95% confidence
         var_cov_VAR_99 = -2.33 * std  # For 99% confidence
 
-        print(f'Historical VAR is {HistVAR}')
         print(f'Variance-Covariance VAR with 95% confidence is {var_cov_VAR_95}')
         print(f'Variance-Covariance VAR with 99% confidence is {var_cov_VAR_99}')
 
