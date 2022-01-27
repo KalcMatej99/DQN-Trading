@@ -31,19 +31,19 @@ class DataAutoPatternExtractionAgent(Data):
 
         self.data_kind = 'AutoPatternExtraction'
 
-        self.data_preprocessed = data.loc[:, ['open_norm', 'high_norm', 'low_norm', 'close_norm']].values
+        self.data_preprocessed = data.loc[:, ['open_norm', 'high_norm', 'low_norm', 'close_norm', 'adx', 'rsi', 'fastd', 'fastk', 'tema']].values
         self.state_mode = state_mode
 
         if state_mode == 1:  # OHLC
-            self.state_size = 4
+            self.state_size = 4 + 5
 
         elif state_mode == 2:  # OHLC + trend
-            self.state_size = 5
+            self.state_size = 5 + 5
             trend = self.data.loc[:, 'trend'].values[:, np.newaxis]
             self.data_preprocessed = np.concatenate([self.data_preprocessed, trend], axis=1)
 
         elif state_mode == 3:  # OHLC + trend + %body + %upper-shadow + %lower-shadow
-            self.state_size = 8
+            self.state_size = 8 + 5
             candle_data = self.data.loc[:, ['trend', '%body', '%upper-shadow', '%lower-shadow']].values
             self.data_preprocessed = np.concatenate([self.data_preprocessed, candle_data], axis=1)
 
@@ -53,14 +53,14 @@ class DataAutoPatternExtractionAgent(Data):
 
         elif state_mode == 5:
             # window_size * OHLC
-            self.state_size = window_size * 4
+            self.state_size = window_size * (4 + 5)
             temp_states = []
-            for i, row in self.data.loc[:, ['open_norm', 'high_norm', 'low_norm', 'close_norm']].iterrows():
+            for i, row in self.data.loc[:, ['open_norm', 'high_norm', 'low_norm', 'close_norm', 'adx', 'rsi', 'fastd', 'fastk', 'tema']].iterrows():
                 if i < window_size - 1:
-                    temp_states += [row.open_norm, row.high_norm, row.low_norm, row.close_norm]
+                    temp_states += [row.open_norm, row.high_norm, row.low_norm, row.close_norm, row.adx, row.rsi, row.fastd, row.fastk, row.tema]
                 else:
                     # The trend of the k'th index shows the trend of the whole candles inside the window
-                    temp_states += [row.open_norm, row.high_norm, row.low_norm, row.close_norm]
+                    temp_states += [row.open_norm, row.high_norm, row.low_norm, row.close_norm, row.adx, row.rsi, row.fastd, row.fastk, row.tema]
                     self.states.append(np.array(temp_states))
                     # removing the trend and first 4 elements from the vector
                     temp_states = temp_states[3:-1]

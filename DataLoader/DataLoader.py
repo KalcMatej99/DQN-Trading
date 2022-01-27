@@ -10,6 +10,7 @@ import seaborn as sns
 import os
 import ast
 from pathlib import Path
+import talib.abstract as ta
 
 
 class YahooFinanceDataLoader:
@@ -117,6 +118,12 @@ class YahooFinanceDataLoader:
         data.rename(columns={'Close': 'close', 'Open': 'open', 'High': 'high', 'Low': 'low'}, inplace=True)
         data = data.drop(['Adj Close', 'Volume'], axis=1)
         data['mean_candle'] = data.close
+        data['adx'] = ta.ADX(data)
+        data['rsi'] = ta.RSI(data)
+        stoch_fast = ta.STOCHF(data)
+        data['fastd'] = stoch_fast['fastd']
+        data['fastk'] = stoch_fast['fastk']
+        data['tema'] = ta.TEMA(data, timeperiod=9)
         patterns = label_candles(data)
         return data, list(patterns.keys())
 
