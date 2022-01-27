@@ -3,3 +3,5 @@ __pycache__/
 Results/*
 dqn-trading/*
 DataLoader/__pycache__/*
+.csv
+*m.csv

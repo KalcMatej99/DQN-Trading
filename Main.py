@@ -1,4 +1,5 @@
 # Importing DataLoaders for each model. These models include rule-based, vanilla DQN and encoder-decoder DQN.
+from xmlrpc.client import Boolean
 from DataLoader.DataLoader import YahooFinanceDataLoader
 from DataLoader.DataForPatternBasedAgent import DataForPatternBasedAgent
 from DataLoader.DataAutoPatternExtractionAgent import DataAutoPatternExtractionAgent
@@ -25,7 +26,7 @@ import os
 from utils import save_pkl, load_pkl
 
 parser = argparse.ArgumentParser(description='DQN-Trader arguments')
-parser.add_argument('--dataset-name', default="BTC-EUR",
+parser.add_argument('--dataset-name', default="BTC_USDT_1h",
                     help='Name of the data inside the Data folder')
 parser.add_argument('--nep', type=int, default=50,
                     help='Number of episodes')
@@ -33,15 +34,20 @@ parser.add_argument('--window_size', type=int, default=3,
                     help='Window size for sequential models')
 parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
+parser.add_argument('--load_dataset_from_file', type=Boolean, default=False,
+                    help='run from csv or prepared data set')
 args = parser.parse_args()
 
 DATA_LOADERS = {
-    'BTC-EUR': YahooFinanceDataLoader('BTC-EUR',
-                                      split_point='2021-12-12',
-                                      load_from_file=False),
-    'ETH-EUR': YahooFinanceDataLoader('ETH-EUR',
-                                      split_point='2021-12-12',
-                                      load_from_file=False)
+    'BTC_USDT_1h': YahooFinanceDataLoader('BTC_USDT_1h',
+                                      split_point='2021-6-12 00:00:00',
+                                      load_from_file=args.load_dataset_from_file),
+    'BTC_USDT_1m': YahooFinanceDataLoader('BTC_USDT_1m',
+                                      split_point='2021-6-12 00:00:00',
+                                      load_from_file=args.load_dataset_from_file),
+    'BTC_USDT_15m': YahooFinanceDataLoader('BTC_USDT_15m',
+                                      split_point='2021-6-12 00:00:00',
+                                      load_from_file=args.load_dataset_from_file)
 }
 
 

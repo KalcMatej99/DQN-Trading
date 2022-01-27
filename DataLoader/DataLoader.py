@@ -123,7 +123,9 @@ class YahooFinanceDataLoader:
         stoch_fast = ta.STOCHF(data)
         data['fastd'] = stoch_fast['fastd']
         data['fastk'] = stoch_fast['fastk']
-        data['tema'] = ta.TEMA(data, timeperiod=9)
+        data['tema9'] = ta.TEMA(data, timeperiod=9)
+        data['tema21'] = ta.TEMA(data, timeperiod=21)
+        data['tema100'] = ta.TEMA(data, timeperiod=100)
         patterns = label_candles(data)
         return data, list(patterns.keys())
 
@@ -161,3 +163,10 @@ class YahooFinanceDataLoader:
         self.data['high_norm'] = min_max_scaler.fit_transform(self.data.high.values.reshape(-1, 1))
         self.data['low_norm'] = min_max_scaler.fit_transform(self.data.low.values.reshape(-1, 1))
         self.data['close_norm'] = min_max_scaler.fit_transform(self.data.close.values.reshape(-1, 1))
+        self.data['adx_norm'] = min_max_scaler.fit_transform(self.data.adx.values.reshape(-1, 1))
+        self.data['rsi_norm'] = min_max_scaler.fit_transform(self.data.rsi.values.reshape(-1, 1))
+        self.data['fastd_norm'] = min_max_scaler.fit_transform(self.data.fastd.values.reshape(-1, 1))
+        self.data['fastk_norm'] = min_max_scaler.fit_transform(self.data.fastk.values.reshape(-1, 1))
+        self.data['tema9_norm'] = min_max_scaler.fit_transform(self.data.tema9.values.reshape(-1, 1))
+        self.data['tema21_norm'] = min_max_scaler.fit_transform(self.data.tema21.values.reshape(-1, 1))
+        self.data['tema100_norm'] = min_max_scaler.fit_transform(self.data.tema100.values.reshape(-1, 1))
