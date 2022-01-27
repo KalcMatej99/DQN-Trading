@@ -4,5 +4,5 @@ Results/*
 dqn-trading/*
 DataLoader/__pycache__/*
 .csv
-*m.csv
+*1m.csv
 data_processed.csv
