@@ -63,7 +63,7 @@ class DataAutoPatternExtractionAgent(Data):
                     temp_states += [row.open_norm, row.high_norm, row.low_norm, row.close_norm, row.adx, row.rsi, row.fastd, row.fastk, row.tema]
                     self.states.append(np.array(temp_states))
                     # removing the trend and first 4 elements from the vector
-                    temp_states = temp_states[3:-1]
+                    temp_states = temp_states[8:-1]
 
         if state_mode < 5:
             for i in range(len(self.data_preprocessed)):

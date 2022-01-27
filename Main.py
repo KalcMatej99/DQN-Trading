@@ -38,10 +38,10 @@ args = parser.parse_args()
 DATA_LOADERS = {
     'BTC-EUR': YahooFinanceDataLoader('BTC-EUR',
                                       split_point='2021-12-12',
-                                      load_from_file=False),
+                                      load_from_file=True),
     'ETH-EUR': YahooFinanceDataLoader('ETH-EUR',
                                       split_point='2021-12-12',
-                                      load_from_file=False)
+                                      load_from_file=True)
 }
 
 
@@ -430,10 +430,10 @@ class SensitivityRun:
                                  window_size=self.window_size)
 
     def train(self):
+        self.dqn_windowed.train(self.n_episodes)
         self.dqn_pattern.train(self.n_episodes)
         self.dqn_vanilla.train(self.n_episodes)
         self.dqn_candle_rep.train(self.n_episodes)
-        self.dqn_windowed.train(self.n_episodes)
         self.mlp_pattern.train(self.n_episodes)
         self.mlp_vanilla.train(self.n_episodes)
         self.mlp_candle_rep.train(self.n_episodes)
