@@ -38,10 +38,10 @@ args = parser.parse_args()
 DATA_LOADERS = {
     'BTC-EUR': YahooFinanceDataLoader('BTC-EUR',
                                       split_point='2021-12-12',
-                                      load_from_file=True),
+                                      load_from_file=False),
     'ETH-EUR': YahooFinanceDataLoader('ETH-EUR',
                                       split_point='2021-12-12',
-                                      load_from_file=True)
+                                      load_from_file=False)
 }
 
 
