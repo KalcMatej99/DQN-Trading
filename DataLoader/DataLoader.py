@@ -16,7 +16,7 @@ import talib.abstract as ta
 class YahooFinanceDataLoader:
     """ Dataset form GOOGLE"""
 
-    def __init__(self, dataset_name, split_point, begin_date=None, end_date=None, load_from_file=False):
+    def __init__(self, dataset_name, split_point, begin_date=None, end_date=None, load_from_file=False, load_patterns=False):
         """
         :param dataset_name
             folder name in './Data' directory
@@ -48,10 +48,12 @@ class YahooFinanceDataLoader:
         self.split_point = split_point
         self.begin_date = begin_date
         self.end_date = end_date
+        self.load_patterns = load_patterns
 
         if not load_from_file:
             self.data, self.patterns = self.load_data()
-            self.save_pattern()
+            if self.load_patterns:
+                self.save_pattern()
             self.normalize_data()
             self.data.to_csv(f'{self.DATA_PATH}data_processed.csv', index=True)
 
@@ -115,8 +117,8 @@ class YahooFinanceDataLoader:
         data = pd.read_csv(f'{self.DATA_PATH}{self.DATA_FILE}')
         data.dropna(inplace=True)
         data.set_index('Date', inplace=True)
-        data.rename(columns={'Close': 'close', 'Open': 'open', 'High': 'high', 'Low': 'low'}, inplace=True)
-        data = data.drop(['Adj Close', 'Volume'], axis=1)
+        data.rename(columns={'Close': 'close', 'Open': 'open', 'High': 'high', 'Low': 'low', "Volume":"volume"}, inplace=True)
+        data = data.drop(['Adj Close'], axis=1)
         data['mean_candle'] = data.close
         data['adx'] = ta.ADX(data)
         data['rsi'] = ta.RSI(data)
@@ -126,7 +128,7 @@ class YahooFinanceDataLoader:
         data['tema9'] = ta.TEMA(data, timeperiod=9)
         data['tema21'] = ta.TEMA(data, timeperiod=21)
         data['tema100'] = ta.TEMA(data, timeperiod=100)
-        patterns = label_candles(data)
+        patterns = label_candles(data, self.load_patterns)
         return data, list(patterns.keys())
 
     def plot_data(self):
@@ -170,3 +172,4 @@ class YahooFinanceDataLoader:
         self.data['tema9_norm'] = min_max_scaler.fit_transform(self.data.tema9.values.reshape(-1, 1))
         self.data['tema21_norm'] = min_max_scaler.fit_transform(self.data.tema21.values.reshape(-1, 1))
         self.data['tema100_norm'] = min_max_scaler.fit_transform(self.data.tema100.values.reshape(-1, 1))
+        self.data['volume_norm'] = min_max_scaler.fit_transform(self.data.volume.values.reshape(-1, 1))

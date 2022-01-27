@@ -39,7 +39,7 @@ spanning_top_offset = 0.1
 harami_gap_significance_level = 0.05
 
 
-def label_candles(data):
+def label_candles(data, use_patterns):
     average_range_of_candles_bodies = abs(data.close - data.open).mean()
     data['label'] = "None"
     data['action'] = "None"
@@ -58,158 +58,159 @@ def label_candles(data):
 
     find_trend(data, window_size)
 
-    for i in tqdm(range(len(data) - 1)):
-        if is_hammer(data.iloc[i], percentage_of_upper_shadow=percentage_of_shadow_hammer,
-                     upper_bound_hammer_significance_level=upper_bound_hammer_significance_level,
-                     lower_bound_hammer_significance_level=lower_bound_hammer_significance_level):
-            patterns["hammer"].append(i)
-            data['label'][i].add("hammer")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'up':
-                data['action'][i + 1] = 'buy'
+    if use_patterns:
+        for i in tqdm(range(len(data) - 1)):
+            if is_hammer(data.iloc[i], percentage_of_upper_shadow=percentage_of_shadow_hammer,
+                        upper_bound_hammer_significance_level=upper_bound_hammer_significance_level,
+                        lower_bound_hammer_significance_level=lower_bound_hammer_significance_level):
+                patterns["hammer"].append(i)
+                data['label'][i].add("hammer")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'up':
+                    data['action'][i + 1] = 'buy'
 
-        if is_inverse_hammer(data.iloc[i], percentage_of_lower_shadow=percentage_of_shadow_hammer,
-                             upper_bound_hammer_significance_level=upper_bound_hammer_significance_level,
-                             lower_bound_hammer_significance_level=lower_bound_hammer_significance_level):
-            patterns["inverse hammer"].append(i)
-            data['label'][i].add("inverse hammer")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'up':
-                data['action'][i + 1] = 'buy'
+            if is_inverse_hammer(data.iloc[i], percentage_of_lower_shadow=percentage_of_shadow_hammer,
+                                upper_bound_hammer_significance_level=upper_bound_hammer_significance_level,
+                                lower_bound_hammer_significance_level=lower_bound_hammer_significance_level):
+                patterns["inverse hammer"].append(i)
+                data['label'][i].add("inverse hammer")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'up':
+                    data['action'][i + 1] = 'buy'
 
-        if (i > 0) and is_bullish_engulfing(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
-                                            candle_significance_level):
-            patterns["bullish engulfing"].append(i)
-            data['label'][i].add("bullish engulfing")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'up':
-                data['action'][i + 1] = 'buy'
+            if (i > 0) and is_bullish_engulfing(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
+                                                candle_significance_level):
+                patterns["bullish engulfing"].append(i)
+                data['label'][i].add("bullish engulfing")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'up':
+                    data['action'][i + 1] = 'buy'
 
-        if (i > 0) and is_piercing_line(data.iloc[i - 1], data.iloc[i],
+            if (i > 0) and is_piercing_line(data.iloc[i - 1], data.iloc[i],
+                                            average_range_of_candles_bodies,
+                                            significance_level=candle_significance_level,
+                                            gap_significance_level=gap_significance_level):
+                patterns["piercing line"].append(i)
+                data['label'][i].add("piercing line")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'up':
+                    data['action'][i + 1] = 'buy'
+
+            if (i > 1) and is_morning_star(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
                                         average_range_of_candles_bodies,
+                                        doji_length_percentage=doji_length_percentage,
                                         significance_level=candle_significance_level,
-                                        gap_significance_level=gap_significance_level):
-            patterns["piercing line"].append(i)
-            data['label'][i].add("piercing line")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'up':
-                data['action'][i + 1] = 'buy'
+                                        down_percentage=down_gap_percentage_morning_star):
+                patterns["morning star"].append(i)
+                data['label'][i].add("morning star")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'up':
+                    data['action'][i + 1] = 'buy'
 
-        if (i > 1) and is_morning_star(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
-                                       average_range_of_candles_bodies,
-                                       doji_length_percentage=doji_length_percentage,
-                                       significance_level=candle_significance_level,
-                                       down_percentage=down_gap_percentage_morning_star):
-            patterns["morning star"].append(i)
-            data['label'][i].add("morning star")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'up':
-                data['action'][i + 1] = 'buy'
+            if (i > 1) and is_three_white_soldier(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
+                                                average_range_of_candles_bodies,
+                                                candle_significance_level):
+                patterns["three white soldiers"].append(i)
 
-        if (i > 1) and is_three_white_soldier(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
-                                              average_range_of_candles_bodies,
-                                              candle_significance_level):
-            patterns["three white soldiers"].append(i)
+                data['label'][i].add("three white soldiers")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'up':
+                    data['action'][i + 1] = 'buy'
 
-            data['label'][i].add("three white soldiers")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'up':
-                data['action'][i + 1] = 'buy'
+            if (i > 0) and is_bullish_harami(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
+                                            candle_significance_level, harami_gap_significance_level):
+                patterns["bullish harami"].append(i)
+                data['label'][i].add("bullish harami")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'up':
+                    data['action'][i + 1] = 'buy'
 
-        if (i > 0) and is_bullish_harami(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
-                                         candle_significance_level, harami_gap_significance_level):
-            patterns["bullish harami"].append(i)
-            data['label'][i].add("bullish harami")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'up':
-                data['action'][i + 1] = 'buy'
-
-        if is_hanging_man(data.iloc[i], percentage_of_upper_shadow=percentage_of_upper_shadow,
-                          lower_bound_hangman_significance_level=lower_bound_hangman_significance_level,
-                          upper_bound_hangman_significance_level=upper_bound_hangman_significance_level):
-            patterns["hanging man"].append(i)
-            data['label'][i].add("hanging man")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'down':
-                data['action'][i + 1] = 'sell'
-
-        if is_shooting_star(data.iloc[i], percentage_of_lower_shadow=percentage_of_upper_shadow,
+            if is_hanging_man(data.iloc[i], percentage_of_upper_shadow=percentage_of_upper_shadow,
                             lower_bound_hangman_significance_level=lower_bound_hangman_significance_level,
                             upper_bound_hangman_significance_level=upper_bound_hangman_significance_level):
-            patterns["shooting star"].append(i)
-            data['label'][i].add("shooting star")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'down':
-                data['action'][i + 1] = 'sell'
+                patterns["hanging man"].append(i)
+                data['label'][i].add("hanging man")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'down':
+                    data['action'][i + 1] = 'sell'
 
-        if (i > 0) and is_bearish_engulfing(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
-                                            candle_significance_level):
-            patterns["bearish engulfing"].append(i)
-            data['label'][i].add("bearish engulfing")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'down':
-                data['action'][i + 1] = 'sell'
+            if is_shooting_star(data.iloc[i], percentage_of_lower_shadow=percentage_of_upper_shadow,
+                                lower_bound_hangman_significance_level=lower_bound_hangman_significance_level,
+                                upper_bound_hangman_significance_level=upper_bound_hangman_significance_level):
+                patterns["shooting star"].append(i)
+                data['label'][i].add("shooting star")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'down':
+                    data['action'][i + 1] = 'sell'
 
-        if (i > 1) and is_evening_star(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
-                                       average_range_of_candles_bodies,
-                                       doji_length_percentage=doji_length_percentage,
-                                       significance_level=candle_significance_level,
-                                       up_percentage=up_gap_percentage_evening_star):
-            patterns["evening star"].append(i)
-            data['label'][i].add("evening star")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'down':
-                data['action'][i + 1] = 'sell'
+            if (i > 0) and is_bearish_engulfing(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
+                                                candle_significance_level):
+                patterns["bearish engulfing"].append(i)
+                data['label'][i].add("bearish engulfing")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'down':
+                    data['action'][i + 1] = 'sell'
 
-        if (i > 1) and is_three_black_crows(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
+            if (i > 1) and is_evening_star(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
+                                        average_range_of_candles_bodies,
+                                        doji_length_percentage=doji_length_percentage,
+                                        significance_level=candle_significance_level,
+                                        up_percentage=up_gap_percentage_evening_star):
+                patterns["evening star"].append(i)
+                data['label'][i].add("evening star")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'down':
+                    data['action'][i + 1] = 'sell'
+
+            if (i > 1) and is_three_black_crows(data.iloc[i - 2], data.iloc[i - 1], data.iloc[i],
+                                                average_range_of_candles_bodies,
+                                                significance_level=candle_significance_level):
+                patterns["three black crows"].append(i)
+
+                data['label'][i].add("three black crows")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'down':
+                    data['action'][i + 1] = 'sell'
+
+            if (i > 0) and is_dark_cloud_cover(data.iloc[i - 1], data.iloc[i],
                                             average_range_of_candles_bodies,
-                                            significance_level=candle_significance_level):
-            patterns["three black crows"].append(i)
+                                            significance_level=candle_significance_level,
+                                            gap_significance_level=gap_significance_level):
+                patterns["dark cloud cover"].append(i)
+                data['label'][i].add("dark cloud cover")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'down':
+                    data['action'][i + 1] = 'sell'
 
-            data['label'][i].add("three black crows")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'down':
-                data['action'][i + 1] = 'sell'
+            if (i > 0) and is_bearish_harami(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
+                                            candle_significance_level, harami_gap_significance_level):
+                patterns["bearish harami"].append(i)
+                data['label'][i].add("bearish harami")
+                trend_history = data['trend'][i]
+                if trend_history and confirmation_of_the_trend(data, i) == 'down':
+                    data['action'][i + 1] = 'sell'
 
-        if (i > 0) and is_dark_cloud_cover(data.iloc[i - 1], data.iloc[i],
-                                           average_range_of_candles_bodies,
-                                           significance_level=candle_significance_level,
-                                           gap_significance_level=gap_significance_level):
-            patterns["dark cloud cover"].append(i)
-            data['label'][i].add("dark cloud cover")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'down':
-                data['action'][i + 1] = 'sell'
+            if is_doji(data.iloc[i], average_range_of_candles_bodies, percentage_length=doji_length_percentage):
+                patterns["doji"].append(i)
+                data['label'][i].add("doji")
 
-        if (i > 0) and is_bearish_harami(data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
-                                         candle_significance_level, harami_gap_significance_level):
-            patterns["bearish harami"].append(i)
-            data['label'][i].add("bearish harami")
-            trend_history = data['trend'][i]
-            if trend_history and confirmation_of_the_trend(data, i) == 'down':
-                data['action'][i + 1] = 'sell'
+            if is_spinning_top(data.iloc[i], average_range_of_candles_bodies, significance_level=spanning_top_significance,
+                            doji_level=spanning_top_doji_level,
+                            offset=spanning_top_offset):
+                patterns["spanning top"].append(i)
+                data['label'][i].add("spanning top")
 
-        if is_doji(data.iloc[i], average_range_of_candles_bodies, percentage_length=doji_length_percentage):
-            patterns["doji"].append(i)
-            data['label'][i].add("doji")
+            if (i > 3) and is_falling_three_methods(data.iloc[i - 4], data.iloc[i - 3], data.iloc[i - 2],
+                                                    data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
+                                                    significance_level=candle_significance_level):
+                patterns["falling three methods"].append(i)
+                data['label'][i].add("falling three methods")
 
-        if is_spinning_top(data.iloc[i], average_range_of_candles_bodies, significance_level=spanning_top_significance,
-                           doji_level=spanning_top_doji_level,
-                           offset=spanning_top_offset):
-            patterns["spanning top"].append(i)
-            data['label'][i].add("spanning top")
-
-        if (i > 3) and is_falling_three_methods(data.iloc[i - 4], data.iloc[i - 3], data.iloc[i - 2],
+            if (i > 3) and is_rising_three_methods(data.iloc[i - 4], data.iloc[i - 3], data.iloc[i - 2],
                                                 data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
                                                 significance_level=candle_significance_level):
-            patterns["falling three methods"].append(i)
-            data['label'][i].add("falling three methods")
-
-        if (i > 3) and is_rising_three_methods(data.iloc[i - 4], data.iloc[i - 3], data.iloc[i - 2],
-                                               data.iloc[i - 1], data.iloc[i], average_range_of_candles_bodies,
-                                               significance_level=candle_significance_level):
-            patterns["rising three methods"].append(i)
-            data['label'][i].add("rising three methods")
+                patterns["rising three methods"].append(i)
+                data['label'][i].add("rising three methods")
 
     for i in range(len(data)):
         data['label'][i] = list(data['label'][i])

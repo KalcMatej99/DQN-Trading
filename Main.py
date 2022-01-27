@@ -36,18 +36,15 @@ parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--load_dataset_from_file', type=Boolean, default=False,
                     help='run from csv or prepared data set')
+parser.add_argument('--use_patterns', type=Boolean, default=False,
+                    help='run also pattern models')
 args = parser.parse_args()
 
 DATA_LOADERS = {
-    'BTC_USDT_1h': YahooFinanceDataLoader('BTC_USDT_1h',
+    f'{args.dataset_name}': YahooFinanceDataLoader(f'{args.dataset_name}',
                                       split_point='2021-6-12 00:00:00',
-                                      load_from_file=args.load_dataset_from_file),
-    'BTC_USDT_1m': YahooFinanceDataLoader('BTC_USDT_1m',
-                                      split_point='2021-6-12 00:00:00',
-                                      load_from_file=args.load_dataset_from_file),
-    'BTC_USDT_15m': YahooFinanceDataLoader('BTC_USDT_15m',
-                                      split_point='2021-6-12 00:00:00',
-                                      load_from_file=args.load_dataset_from_file)
+                                      load_from_file=args.load_dataset_from_file,
+                                      load_patterns = args.use_patterns)
 }
 
 
@@ -99,7 +96,7 @@ class SensitivityRun:
         # set to None, because it can be recovered from the name of the data loader (e.g. dataTrain_patternBased).
 
         self.STATE_MODE_OHLC = 1
-        self.STATE_MODE_CANDLE_REP = 4  # %body + %upper-shadow + %lower-shadow
+        self.STATE_MODE_CANDLE_REP = 3  # %body + %upper-shadow + %lower-shadow
         self.STATE_MODE_WINDOWED = 5  # window with k candles inside + the trend of those candles
 
         self.dataTrain_autoPatternExtractionAgent = None
@@ -132,20 +129,36 @@ class SensitivityRun:
             os.makedirs(self.experiment_path)
 
         self.reset()
-        self.test_portfolios = {'DQN-pattern': {},
-                                'DQN-vanilla': {},
-                                'DQN-candlerep': {},
-                                'DQN-windowed': {},
-                                'MLP-pattern': {},
-                                'MLP-vanilla': {},
-                                'MLP-candlerep': {},
-                                'MLP-windowed': {},
-                                'CNN1d': {},
-                                'CNN2d': {},
-                                'GRU': {},
-                                'Deep-CNN': {},
-                                'CNN-GRU': {},
-                                'CNN-ATTN': {}}
+
+        if args.use_patterns:
+            self.test_portfolios = {'DQN-pattern': {},
+                                    'DQN-vanilla': {},
+                                    'DQN-candlerep': {},
+                                    'DQN-windowed': {},
+                                    'MLP-pattern': {},
+                                    'MLP-vanilla': {},
+                                    'MLP-candlerep': {},
+                                    'MLP-windowed': {},
+                                    'CNN1d': {},
+                                    'CNN2d': {},
+                                    'GRU': {},
+                                    'Deep-CNN': {},
+                                    'CNN-GRU': {},
+                                    'CNN-ATTN': {}}
+        else:
+            self.test_portfolios = {'DQN-vanilla': {},
+                                    'DQN-candlerep': {},
+                                    'DQN-windowed': {},
+                                    'MLP-vanilla': {},
+                                    'MLP-candlerep': {},
+                                    'MLP-windowed': {},
+                                    'CNN1d': {},
+                                    'CNN2d': {},
+                                    'GRU': {},
+                                    'Deep-CNN': {},
+                                    'CNN-GRU': {},
+                                    'CNN-ATTN': {}}
+
 
     def reset(self):
         self.load_data()
@@ -249,18 +262,19 @@ class SensitivityRun:
                                                   self.transaction_cost)
 
     def load_agents(self):
-        self.dqn_pattern = DeepRL(self.data_loader,
-                                  self.dataTrain_patternBased,
-                                  self.dataTest_patternBased,
-                                  self.dataset_name,
-                                  None,
-                                  self.window_size,
-                                  self.transaction_cost,
-                                  BATCH_SIZE=self.batch_size,
-                                  GAMMA=self.gamma,
-                                  ReplayMemorySize=self.replay_memory_size,
-                                  TARGET_UPDATE=self.target_update,
-                                  n_step=self.n_step)
+        if args.use_patterns:
+            self.dqn_pattern = DeepRL(self.data_loader,
+                                    self.dataTrain_patternBased,
+                                    self.dataTest_patternBased,
+                                    self.dataset_name,
+                                    None,
+                                    self.window_size,
+                                    self.transaction_cost,
+                                    BATCH_SIZE=self.batch_size,
+                                    GAMMA=self.gamma,
+                                    ReplayMemorySize=self.replay_memory_size,
+                                    TARGET_UPDATE=self.target_update,
+                                    n_step=self.n_step)
 
         self.dqn_vanilla = DeepRL(self.data_loader,
                                   self.dataTrain_autoPatternExtractionAgent,
@@ -301,19 +315,20 @@ class SensitivityRun:
                                    TARGET_UPDATE=self.target_update,
                                    n_step=self.n_step)
 
-        self.mlp_pattern = SimpleMLP(self.data_loader,
-                                     self.dataTrain_patternBased,
-                                     self.dataTest_patternBased,
-                                     self.dataset_name,
-                                     None,
-                                     self.window_size,
-                                     self.transaction_cost,
-                                     self.feature_size,
-                                     BATCH_SIZE=self.batch_size,
-                                     GAMMA=self.gamma,
-                                     ReplayMemorySize=self.replay_memory_size,
-                                     TARGET_UPDATE=self.target_update,
-                                     n_step=self.n_step)
+        if args.use_patterns:
+            self.mlp_pattern = SimpleMLP(self.data_loader,
+                                        self.dataTrain_patternBased,
+                                        self.dataTest_patternBased,
+                                        self.dataset_name,
+                                        None,
+                                        self.window_size,
+                                        self.transaction_cost,
+                                        self.feature_size,
+                                        BATCH_SIZE=self.batch_size,
+                                        GAMMA=self.gamma,
+                                        ReplayMemorySize=self.replay_memory_size,
+                                        TARGET_UPDATE=self.target_update,
+                                        n_step=self.n_step)
 
         self.mlp_vanilla = SimpleMLP(self.data_loader,
                                      self.dataTrain_autoPatternExtractionAgent,
@@ -436,13 +451,16 @@ class SensitivityRun:
                                  window_size=self.window_size)
 
     def train(self):
+        self.mlp_candle_rep.train(self.n_episodes)
         self.dqn_windowed.train(self.n_episodes)
-        self.dqn_pattern.train(self.n_episodes)
+        if args.use_patterns:
+            self.dqn_pattern.train(self.n_episodes)
         self.dqn_vanilla.train(self.n_episodes)
         self.dqn_candle_rep.train(self.n_episodes)
-        self.mlp_pattern.train(self.n_episodes)
+
+        if args.use_patterns:
+            self.mlp_pattern.train(self.n_episodes)
         self.mlp_vanilla.train(self.n_episodes)
-        self.mlp_candle_rep.train(self.n_episodes)
         self.mlp_windowed.train(self.n_episodes)
         self.cnn1d.train(self.n_episodes)
         self.cnn2d.train(self.n_episodes)
@@ -460,12 +478,15 @@ class SensitivityRun:
         elif self.evaluation_parameter == 'replay memory size':
             key = self.replay_memory_size
 
-        self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
+        if args.use_patterns:
+            self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-vanilla'][key] = self.dqn_vanilla.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-candlerep'][
             key] = self.dqn_candle_rep.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-windowed'][key] = self.dqn_windowed.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-pattern'][key] = self.mlp_pattern.test().get_daily_portfolio_value()
+
+        if args.use_patterns:
+            self.test_portfolios['MLP-pattern'][key] = self.mlp_pattern.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-vanilla'][key] = self.mlp_vanilla.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-candlerep'][
             key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
