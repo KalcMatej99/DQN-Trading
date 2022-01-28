@@ -120,14 +120,23 @@ class YahooFinanceDataLoader:
         data.rename(columns={'Close': 'close', 'Open': 'open', 'High': 'high', 'Low': 'low', "Volume":"volume"}, inplace=True)
         data = data.drop(['Adj Close'], axis=1)
         data['mean_candle'] = data.close
-        data['adx'] = ta.ADX(data)
-        data['rsi'] = ta.RSI(data)
+        data['adx'] = ta.ADX(data['high'], data['low'], data["close"])
+        data['rsi'] = ta.RSI(data['close'])
         stoch_fast = ta.STOCHF(data)
         data['fastd'] = stoch_fast['fastd']
         data['fastk'] = stoch_fast['fastk']
-        data['tema9'] = ta.TEMA(data, timeperiod=9)
-        data['tema21'] = ta.TEMA(data, timeperiod=21)
-        data['tema100'] = ta.TEMA(data, timeperiod=100)
+        data['tema9'] = ta.EMA(data, timeperiod=9)
+        data['tema21'] = ta.EMA(data, timeperiod=21)
+        data['tema9_tema21'] = data['tema9'] - data['tema21']
+        data['tema100'] = ta.EMA(data, timeperiod=100)
+        data['ma9'] = ta.MA(data, timeperiod=9)
+        data['ma21'] = ta.MA(data, timeperiod=21)
+        data['ma9_ma21'] = data['ma9'] - data['ma21']
+        data['ma100'] = ta.MA(data, timeperiod=100)
+        data["macd"] = ta.MACD(data["close"], fastperiod=12, slowperiod=26, signalperiod=9)[0] / \
+                     ta.MACD(data["close"], fastperiod=12, slowperiod=26, signalperiod=9)[0].mean()
+        data["mom"] = ta.MOM(data["close"])
+        data["roc"] = ta.ROC(data["close"], timeperiod=10)
         patterns = label_candles(data, self.load_patterns)
         return data, list(patterns.keys())
 
@@ -170,6 +179,14 @@ class YahooFinanceDataLoader:
         self.data['fastd_norm'] = min_max_scaler.fit_transform(self.data.fastd.values.reshape(-1, 1))
         self.data['fastk_norm'] = min_max_scaler.fit_transform(self.data.fastk.values.reshape(-1, 1))
         self.data['tema9_norm'] = min_max_scaler.fit_transform(self.data.tema9.values.reshape(-1, 1))
+        self.data['tema9_tema21_norm'] = min_max_scaler.fit_transform(self.data.tema9_tema21.values.reshape(-1, 1))
         self.data['tema21_norm'] = min_max_scaler.fit_transform(self.data.tema21.values.reshape(-1, 1))
         self.data['tema100_norm'] = min_max_scaler.fit_transform(self.data.tema100.values.reshape(-1, 1))
         self.data['volume_norm'] = min_max_scaler.fit_transform(self.data.volume.values.reshape(-1, 1))
+        self.data['ma9_norm'] = min_max_scaler.fit_transform(self.data.ma9.values.reshape(-1, 1))
+        self.data['ma21_norm'] = min_max_scaler.fit_transform(self.data.ma21.values.reshape(-1, 1))
+        self.data['ma9_ma21_norm'] = min_max_scaler.fit_transform(self.data["ma9_ma21"].values.reshape(-1, 1))
+        self.data['ma100_norm'] = min_max_scaler.fit_transform(self.data.ma100.values.reshape(-1, 1))
+        self.data['macd_norm'] = min_max_scaler.fit_transform(self.data.macd.values.reshape(-1, 1))
+        self.data['mom_norm'] = min_max_scaler.fit_transform(self.data.mom.values.reshape(-1, 1))
+        self.data['roc_norm'] = min_max_scaler.fit_transform(self.data.roc.values.reshape(-1, 1))

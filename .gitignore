@@ -6,3 +6,4 @@ DataLoader/__pycache__/*
 .csv
 *1m.csv
 data_processed.csv
+oldRunFiles/*
