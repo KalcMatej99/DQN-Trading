@@ -39,9 +39,9 @@ parser.add_argument('--load_dataset_from_file', type=Boolean, default=False,
                     help='run from csv or prepared data set')
 parser.add_argument('--use_patterns', type=Boolean, default=False,
                     help='run also pattern models')
-parser.add_argument('--begin_date', type=str, default="2020-01-1 00:00:00.000",
+parser.add_argument('--begin_date', type=str, default="2020-01-01 00:00:00.000",
                     help='start date of data frame')
-parser.add_argument('--split_point', type=str, default='2021-6-12 00:00:00',
+parser.add_argument('--split_point', type=str, default='2021-06-12 00:00:00.000',
                     help='split point in data frame')
 args = parser.parse_args()
 

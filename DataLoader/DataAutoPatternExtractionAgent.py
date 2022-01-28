@@ -53,7 +53,8 @@ class DataAutoPatternExtractionAgent(Data):
 
         elif state_mode == 5:
             # window_size * OHLC
-            self.state_size = window_size * (20)
+            numb_of_elem = 20
+            self.state_size = window_size * (numb_of_elem)
             temp_states = []
             for i, row in self.data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm', "adx_norm", "rsi_norm", "fastd_norm", "fastk_norm", "tema9_norm", "tema21_norm", "tema100_norm",\
                 'ma9_norm', 'ma21_norm', 'ma9_ma21_norm', 'ma100_norm', 'macd_norm', 'mom_norm', 'roc_norm', 'tema9_tema21_norm']].iterrows():
@@ -66,7 +67,7 @@ class DataAutoPatternExtractionAgent(Data):
                         row.ma9_norm, row.ma21_norm, row.ma9_ma21_norm, row.ma100_norm, row.macd_norm, row.mom_norm, row.roc_norm, row.tema9_tema21_norm]
                     self.states.append(np.array(temp_states))
                     # removing the elements from the vector
-                    temp_states = temp_states[11:-1]
+                    temp_states = temp_states[(numb_of_elem-1):-1]
 
         if state_mode < 5:
             for i in range(len(self.data_preprocessed)):
