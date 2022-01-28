@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 from PatternDetectionInCandleStick.LabelPatterns import label_candles
 from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -133,8 +134,9 @@ class YahooFinanceDataLoader:
         data['ma21'] = ta.MA(data, timeperiod=21)
         data['ma9_ma21'] = data['ma9'] - data['ma21']
         data['ma100'] = ta.MA(data, timeperiod=100)
-        data["macd"] = ta.MACD(data["close"], fastperiod=12, slowperiod=26, signalperiod=9)[0] / \
-                     ta.MACD(data["close"], fastperiod=12, slowperiod=26, signalperiod=9)[0].mean()
+        macds = ta.MACD(data["close"], fastperiod=12, slowperiod=26, signalperiod=9)[0]
+        mean_of_macds = np.mean([x for x in macds if np.isnan(x) == False])
+        data["macd"] =  ta.MACD(data["close"], fastperiod=12, slowperiod=26, signalperiod=9)[0]/mean_of_macds
         data["mom"] = ta.MOM(data["close"])
         data["roc"] = ta.ROC(data["close"], timeperiod=10)
         patterns = label_candles(data, self.load_patterns)
