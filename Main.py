@@ -1,4 +1,5 @@
 # Importing DataLoaders for each model. These models include rule-based, vanilla DQN and encoder-decoder DQN.
+from tokenize import String
 from xmlrpc.client import Boolean
 from DataLoader.DataLoader import YahooFinanceDataLoader
 from DataLoader.DataForPatternBasedAgent import DataForPatternBasedAgent
@@ -38,13 +39,16 @@ parser.add_argument('--load_dataset_from_file', type=Boolean, default=False,
                     help='run from csv or prepared data set')
 parser.add_argument('--use_patterns', type=Boolean, default=False,
                     help='run also pattern models')
+parser.add_argument('--begin_date', type=String, default="2020-01-1 00:00:00.000",
+                    help='start date of data frame')
 args = parser.parse_args()
 
 DATA_LOADERS = {
     f'{args.dataset_name}': YahooFinanceDataLoader(f'{args.dataset_name}',
                                       split_point='2021-6-12 00:00:00',
                                       load_from_file=args.load_dataset_from_file,
-                                      load_patterns = args.use_patterns)
+                                      load_patterns = args.use_patterns,
+                                      begin_date=args.begin_date)
 }
 
 
