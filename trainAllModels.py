@@ -24,12 +24,11 @@ import argparse
 from tqdm import tqdm
 import os
 from utils import save_pkl, load_pkl
-import shap
 
 parser = argparse.ArgumentParser(description='DQN-Trader arguments')
 parser.add_argument('--dataset-name', default="BTC_USDT_1h",
                     help='Name of the data inside the Data folder')
-parser.add_argument('--nep', type=int, default=50,
+parser.add_argument('--nep', type=int, default=20,
                     help='Number of episodes')
 parser.add_argument('--window_size', type=int, default=3,
                     help='Window size for sequential models')
@@ -37,15 +36,20 @@ parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--load_dataset_from_file', type=Boolean, default=False,
                     help='run from csv or prepared data set')
-parser.add_argument('--use_patterns', type=Boolean, default=False,
+parser.add_argument('--use_patterns', type=Boolean, default=True,
                     help='run also pattern models')
+parser.add_argument('--begin_date', type=str, default="2020-01-01 00:00:00.000",
+                    help='start date of data frame')
+parser.add_argument('--split_point', type=str, default='2021-06-12 00:00:00.000',
+                    help='split point in data frame')
 args = parser.parse_args()
 
 DATA_LOADERS = {
     f'{args.dataset_name}': YahooFinanceDataLoader(f'{args.dataset_name}',
-                                      split_point='2021-6-12 00:00:00',
+                                      split_point=args.split_point,
                                       load_from_file=args.load_dataset_from_file,
-                                      load_patterns = args.use_patterns)
+                                      load_patterns = args.use_patterns,
+                                      begin_date=args.begin_date)
 }
 
 
@@ -451,8 +455,6 @@ class SensitivityRun:
                                  n_step=self.n_step,
                                  window_size=self.window_size)
 
-    def load_model_weights(self):
-        self.mlp_candle_rep.policy_net.load_state_dict(torch.load("Models/MLP; DATA_KIND(AutoPatternExtraction); BEGIN_DATE(None); END_DATE(None); SPLIT_POINT(2021-6-12 00:00:00); StateMode(3); WindowSize(10); BATCH_SIZE16; GAMMA0.9; REPLAY_MEMORY_SIZE32; TARGET_UPDATE5; N_STEP8/model.pkl"))
     def train(self):
         self.mlp_candle_rep.train(self.n_episodes)
         self.dqn_windowed.train(self.n_episodes)
@@ -481,11 +483,7 @@ class SensitivityRun:
         elif self.evaluation_parameter == 'replay memory size':
             key = self.replay_memory_size
 
-        self.test_portfolios['MLP-candlerep'][
-            key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
-
-        return
-        if args.use_patterns and self.dqn_pattern != None:
+        if args.use_patterns:
             self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-vanilla'][key] = self.dqn_vanilla.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-candlerep'][
@@ -495,6 +493,8 @@ class SensitivityRun:
         if args.use_patterns:
             self.test_portfolios['MLP-pattern'][key] = self.mlp_pattern.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-vanilla'][key] = self.mlp_vanilla.test().get_daily_portfolio_value()
+        self.test_portfolios['MLP-candlerep'][
+            key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-windowed'][key] = self.mlp_windowed.test().get_daily_portfolio_value()
         self.test_portfolios['CNN1d'][key] = self.cnn1d.test().get_daily_portfolio_value()
         self.test_portfolios['CNN2d'][key] = self.cnn2d.test().get_daily_portfolio_value()
@@ -502,39 +502,6 @@ class SensitivityRun:
         self.test_portfolios['Deep-CNN'][key] = self.deep_cnn.test().get_daily_portfolio_value()
         self.test_portfolios['CNN-GRU'][key] = self.cnn_gru.test().get_daily_portfolio_value()
         self.test_portfolios['CNN-ATTN'][key] = self.cnn_attn.test().get_daily_portfolio_value()
-
-    def plot_sensitivity(self):
-        plot_path = os.path.join(self.experiment_path, 'plots')
-        if not os.path.exists(plot_path):
-            os.makedirs(plot_path)
-
-        sns.set(rc={'figure.figsize': (15, 7)})
-        sns.set_palette(sns.color_palette("Paired", 15))
-
-        for model_name in ['MLP-candlerep']:
-            first = True
-            ax = None
-            for gamma in self.test_portfolios[model_name]:
-                profit_percentage = [
-                    (self.test_portfolios[model_name][gamma][i] - self.test_portfolios[model_name][gamma][0]) /
-                    self.test_portfolios[model_name][gamma][0] * 100
-                    for i in range(len(self.test_portfolios[model_name][gamma]))]
-
-                difference = len(self.test_portfolios[model_name][gamma]) - len(self.data_loader.data_test_with_date)
-                df = pd.DataFrame({'date': self.data_loader.data_test_with_date.index,
-                                   'portfolio': profit_percentage[difference:]})
-                if not first:
-                    df.plot(ax=ax, x='date', y='portfolio', label=gamma)
-                else:
-                    ax = df.plot(x='date', y='portfolio', label=gamma)
-                    first = False
-
-            ax.set(xlabel='Time', ylabel='%Rate of Return')
-            ax.set_title(f'Analyzing the sensitivity of {model_name} to {self.evaluation_parameter}')
-            plt.legend()
-            fig_file = os.path.join(plot_path, f'{model_name}.jpg')
-            plt.savefig(fig_file, dpi=300)
-
 
     def plot_and_save_sensitivity(self):
         plot_path = os.path.join(self.experiment_path, 'plots')
@@ -593,7 +560,9 @@ if __name__ == '__main__':
     batch_size_default = 16
     replay_memory_size_default = 32
 
+    pbar = tqdm(len(gamma_list) + len(replay_memory_size_list) + len(batch_size_list))
 
+    # test gamma
 
     run = SensitivityRun(
         dataset_name,
@@ -608,7 +577,61 @@ if __name__ == '__main__':
         device,
         evaluation_parameter='gamma',
         transaction_cost=0)
-    run.evaluate_sensitivity()
-    run.plot_sensitivity()
 
+    for gamma in gamma_list:
+        run.gamma = gamma
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
 
+    run.save_experiment()
+
+    # test batch-size
+    run = SensitivityRun(
+        dataset_name,
+        gamma_default,
+        batch_size_default,
+        replay_memory_size_default,
+        feature_size,
+        target_update,
+        n_episodes,
+        n_step,
+        window_size,
+        device,
+        evaluation_parameter='batch size',
+        transaction_cost=0)
+
+    for batch_size in batch_size_list:
+        run.batch_size = batch_size
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
+
+    run.save_experiment()
+
+    # test replay memory size
+    run = SensitivityRun(
+        dataset_name,
+        gamma_default,
+        batch_size_default,
+        replay_memory_size_default,
+        feature_size,
+        target_update,
+        n_episodes,
+        n_step,
+        window_size,
+        device,
+        evaluation_parameter='replay memory size',
+        transaction_cost=0)
+
+    for replay_memory_size in replay_memory_size_list:
+        run.replay_memory_size = replay_memory_size
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
+
+    run.save_experiment()
+    pbar.close()

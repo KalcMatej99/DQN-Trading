@@ -31,11 +31,12 @@ class DataAutoPatternExtractionAgent(Data):
 
         self.data_kind = 'AutoPatternExtraction'
 
-        self.data_preprocessed = data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm', 'adx_norm', 'rsi_norm', 'fastd_norm', 'fastk_norm', 'tema9_norm', 'tema21_norm', 'tema100_norm']].values
+        self.data_preprocessed = data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm', "adx_norm", "rsi_norm", "fastd_norm", "fastk_norm", "tema9_norm", "tema21_norm", "tema100_norm",\
+                'ma9_norm', 'ma21_norm', 'ma9_ma21_norm', 'ma100_norm', 'macd_norm', 'mom_norm', 'roc_norm', 'tema9_tema21_norm']].values
         self.state_mode = state_mode
 
         if state_mode == 1:  # OHLC
-            self.state_size = 4 + 8
+            self.state_size = 20
 
         elif state_mode == 2:  # OHLC + trend
             self.state_size = 5 + 8
@@ -43,7 +44,7 @@ class DataAutoPatternExtractionAgent(Data):
             self.data_preprocessed = np.concatenate([self.data_preprocessed, trend], axis=1)
 
         elif state_mode == 3:  # OHLC + trend + %body + %upper-shadow + %lower-shadow
-            self.state_size = 12 + 4
+            self.state_size = 20 + 4
             candle_data = self.data.loc[:, ['trend', '%body', '%upper-shadow', '%lower-shadow']].values
             self.data_preprocessed = np.concatenate([self.data_preprocessed, candle_data], axis=1)
 
