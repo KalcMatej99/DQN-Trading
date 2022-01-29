@@ -118,6 +118,12 @@ class YahooFinanceDataLoader:
         data = pd.read_csv(f'{self.DATA_PATH}{self.DATA_FILE}')
         data.dropna(inplace=True)
         data.set_index('Date', inplace=True)
+
+        if self.begin_date is not None:
+            data = data[data.index >= self.begin_date]
+
+        if self.end_date is not None:
+            data = data[data.index <= self.end_date]
         data.rename(columns={'Close': 'close', 'Open': 'open', 'High': 'high', 'Low': 'low', "Volume":"volume"}, inplace=True)
         data = data.drop(['Adj Close'], axis=1)
         data['mean_candle'] = data.close
