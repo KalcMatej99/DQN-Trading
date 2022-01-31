@@ -67,7 +67,7 @@ class SensitivityRun:
                  window_size,
                  device,
                  evaluation_parameter='gamma',
-                 transaction_cost=0):
+                 transaction_cost=0.02):
         """
 
         @param data_loader:
@@ -285,7 +285,7 @@ if __name__ == '__main__':
         window_size,
         device,
         evaluation_parameter='gamma',
-        transaction_cost=0)
+        transaction_cost=0.02)
 
     for gamma in gamma_list:
         run.gamma = gamma
@@ -309,7 +309,7 @@ if __name__ == '__main__':
         window_size,
         device,
         evaluation_parameter='batch size',
-        transaction_cost=0)
+        transaction_cost=0.02)
 
     for batch_size in batch_size_list:
         run.batch_size = batch_size
@@ -333,7 +333,7 @@ if __name__ == '__main__':
         window_size,
         device,
         evaluation_parameter='replay memory size',
-        transaction_cost=0)
+        transaction_cost=0.02)
 
     for replay_memory_size in replay_memory_size_list:
         run.replay_memory_size = replay_memory_size
