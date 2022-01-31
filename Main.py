@@ -254,7 +254,7 @@ class SensitivityRun:
 
 
 if __name__ == '__main__':
-    gamma_list = [0.9]
+    gamma_list = [0.9, 0.8, 0.7]
     batch_size_list = [16, 64, 256]
     replay_memory_size_list = [16, 64, 256]
     n_step = 8
@@ -265,7 +265,7 @@ if __name__ == '__main__':
     feature_size = 64
     target_update = 5
 
-    gamma_default = 0.9
+    gamma_default = 0.7
     batch_size_default = 16
     replay_memory_size_default = 32
 
