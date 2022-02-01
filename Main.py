@@ -121,25 +121,7 @@ class SensitivityRun:
             os.makedirs(self.experiment_path)
 
         self.reset()
-
-        if args.use_patterns:
-            self.test_portfolios = {'DQN-pattern': {},
-                                    'DQN-vanilla': {},
-                                    'DQN-candlerep': {},
-                                    'DQN-windowed': {},
-                                    'MLP-pattern': {},
-                                    'MLP-vanilla': {},
-                                    'MLP-candlerep': {},
-                                    'MLP-windowed': {},
-                                    'CNN1d': {},
-                                    'CNN2d': {},
-                                    'GRU': {},
-                                    'Deep-CNN': {},
-                                    'CNN-GRU': {},
-                                    'CNN-ATTN': {}}
-        else:
-            self.test_portfolios = {'DQN-windowed': {},
-                                    'MLP-windowed': {}}
+        self.test_portfolios = {'MLP-windowed': {}}
 
 
     def reset(self):
@@ -167,21 +149,6 @@ class SensitivityRun:
                                            self.transaction_cost)
 
     def load_agents(self):
-        self.dqn_windowed = DeepRL(self.data_loader,
-                                   self.dataTrain_autoPatternExtractionAgent_windowed,
-                                   self.dataTest_autoPatternExtractionAgent_windowed,
-                                   self.dataset_name,
-                                   self.STATE_MODE_WINDOWED,
-                                   self.window_size,
-                                   self.transaction_cost,
-                                   BATCH_SIZE=self.batch_size,
-                                   GAMMA=self.gamma,
-                                   ReplayMemorySize=self.replay_memory_size,
-                                   TARGET_UPDATE=self.target_update,
-                                   n_step=self.n_step)
-
-
-
         self.mlp_windowed = SimpleMLP(self.data_loader,
                                       self.dataTrain_autoPatternExtractionAgent_windowed,
                                       self.dataTest_autoPatternExtractionAgent_windowed,
@@ -197,7 +164,6 @@ class SensitivityRun:
                                       n_step=self.n_step)
 
     def train(self):
-        self.dqn_windowed.train(self.n_episodes)
         self.mlp_windowed.train(self.n_episodes)     
 
     def evaluate_sensitivity(self):
@@ -209,7 +175,6 @@ class SensitivityRun:
         elif self.evaluation_parameter == 'replay memory size':
             key = self.replay_memory_size
 
-        self.test_portfolios['DQN-windowed'][key] = self.dqn_windowed.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-windowed'][key] = self.mlp_windowed.test().get_daily_portfolio_value()
 
     def plot_and_save_sensitivity(self):
@@ -254,7 +219,7 @@ class SensitivityRun:
 
 
 if __name__ == '__main__':
-    gamma_list = [0.9, 0.8, 0.7]
+    gamma_list = [0.8]
     batch_size_list = [16, 64, 256]
     replay_memory_size_list = [16, 64, 256]
     n_step = 8
@@ -285,7 +250,7 @@ if __name__ == '__main__':
         window_size,
         device,
         evaluation_parameter='gamma',
-        transaction_cost=0.02)
+        transaction_cost=0)
 
     for gamma in gamma_list:
         run.gamma = gamma
