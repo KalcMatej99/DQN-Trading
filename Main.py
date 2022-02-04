@@ -27,7 +27,7 @@ import os
 from utils import save_pkl, load_pkl
 
 parser = argparse.ArgumentParser(description='DQN-Trader arguments')
-parser.add_argument('--dataset-name', default="BTC_USDT_1h",
+parser.add_argument('--dataset-name', default="BTC_USDT_1m",
                     help='Name of the data inside the Data folder')
 parser.add_argument('--nep', type=int, default=50,
                     help='Number of episodes')
