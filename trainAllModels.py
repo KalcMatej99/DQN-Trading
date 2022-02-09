@@ -482,6 +482,8 @@ class SensitivityRun:
             key = self.batch_size
         elif self.evaluation_parameter == 'replay memory size':
             key = self.replay_memory_size
+        elif self.evaluation_parameter == 'n_step':
+            key = self.n_step
 
         if args.use_patterns:
             self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
@@ -545,10 +547,10 @@ class SensitivityRun:
 
 
 if __name__ == '__main__':
-    gamma_list = [0.8]
+    gamma_list = [0.9, 0.8, 0.7]
     batch_size_list = [16, 64, 256]
     replay_memory_size_list = [16, 64, 256]
-    n_step = 8
+    n_step_list = [1, 5, 10, 20, 60, 120, 5 * 60, 24 * 60]
     window_size = args.window_size
     dataset_name = args.dataset_name
     n_episodes = args.nep
@@ -556,13 +558,13 @@ if __name__ == '__main__':
     feature_size = 64
     target_update = 5
 
-    gamma_default = 0.9
+    gamma_default = 0.8
     batch_size_default = 16
     replay_memory_size_default = 32
+    n_step_default = 8
 
-    pbar = tqdm(len(gamma_list) + len(replay_memory_size_list) + len(batch_size_list))
+    pbar = tqdm(len(n_step_list) + len(gamma_list) + len(batch_size_list) + len(replay_memory_size_list))
 
-    # test gamma
 
     run = SensitivityRun(
         dataset_name,
@@ -572,11 +574,34 @@ if __name__ == '__main__':
         feature_size,
         target_update,
         n_episodes,
-        n_step,
+        n_step_default,
+        window_size,
+        device,
+        evaluation_parameter='n_step',
+        transaction_cost=0.001)
+        
+    for n_step in n_step_list:
+        run.n_step = n_step
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
+
+    run.save_experiment()
+
+    run = SensitivityRun(
+        dataset_name,
+        gamma_default,
+        batch_size_default,
+        replay_memory_size_default,
+        feature_size,
+        target_update,
+        n_episodes,
+        n_step_default,
         window_size,
         device,
         evaluation_parameter='gamma',
-        transaction_cost=0)
+        transaction_cost=0.001)
 
     for gamma in gamma_list:
         run.gamma = gamma
@@ -596,11 +621,11 @@ if __name__ == '__main__':
         feature_size,
         target_update,
         n_episodes,
-        n_step,
+        n_step_default,
         window_size,
         device,
         evaluation_parameter='batch size',
-        transaction_cost=0.02)
+        transaction_cost=0.001)
 
     for batch_size in batch_size_list:
         run.batch_size = batch_size
@@ -620,11 +645,11 @@ if __name__ == '__main__':
         feature_size,
         target_update,
         n_episodes,
-        n_step,
+        n_step_default,
         window_size,
         device,
         evaluation_parameter='replay memory size',
-        transaction_cost=0.02)
+        transaction_cost=0.001)
 
     for replay_memory_size in replay_memory_size_list:
         run.replay_memory_size = replay_memory_size
@@ -634,4 +659,5 @@ if __name__ == '__main__':
         pbar.update(1)
 
     run.save_experiment()
+    
     pbar.close()
