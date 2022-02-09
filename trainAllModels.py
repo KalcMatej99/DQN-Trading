@@ -36,7 +36,7 @@ parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--load_dataset_from_file', type=Boolean, default=False,
                     help='run from csv or prepared data set')
-parser.add_argument('--use_patterns', type=Boolean, default=True,
+parser.add_argument('--use_patterns', type=Boolean, default=False,
                     help='run also pattern models')
 parser.add_argument('--begin_date', type=str, default="2020-01-01 00:00:00.000",
                     help='start date of data frame')
@@ -456,8 +456,8 @@ class SensitivityRun:
                                  window_size=self.window_size)
 
     def train(self):
-        self.mlp_candle_rep.train(self.n_episodes)
         self.dqn_windowed.train(self.n_episodes)
+        self.mlp_candle_rep.train(self.n_episodes)
         if args.use_patterns:
             self.dqn_pattern.train(self.n_episodes)
         self.dqn_vanilla.train(self.n_episodes)
