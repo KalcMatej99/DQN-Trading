@@ -26,7 +26,7 @@ import os
 from utils import save_pkl, load_pkl
 
 parser = argparse.ArgumentParser(description='DQN-Trader arguments')
-parser.add_argument('--dataset-name', default="BTC_USDT_1h",
+parser.add_argument('--dataset-name', default="BTC_USDT_15m",
                     help='Name of the data inside the Data folder')
 parser.add_argument('--nep', type=int, default=20,
                     help='Number of episodes')
@@ -457,22 +457,35 @@ class SensitivityRun:
 
     def train(self):
         self.dqn_windowed.train(self.n_episodes)
+        self.dqn_windowed.test().evaluate()
         self.mlp_candle_rep.train(self.n_episodes)
+        self.mlp_candle_rep.test().evaluate()
         if args.use_patterns:
             self.dqn_pattern.train(self.n_episodes)
         self.dqn_vanilla.train(self.n_episodes)
+        self.dqn_vanilla.test().evaluate()
         self.dqn_candle_rep.train(self.n_episodes)
+        self.dqn_candle_rep.test().evaluate()
 
         if args.use_patterns:
             self.mlp_pattern.train(self.n_episodes)
+            self.mlp_pattern.test().evaluate()
         self.mlp_vanilla.train(self.n_episodes)
+        self.mlp_vanilla.test().evaluate()
         self.mlp_windowed.train(self.n_episodes)
+        self.mlp_windowed.test().evaluate()
         self.cnn1d.train(self.n_episodes)
+        self.cnn1d.test().evaluate()
         self.cnn2d.train(self.n_episodes)
+        self.cnn2d.test().evaluate()
         self.gru.train(self.n_episodes)
+        self.gru.test().evaluate()
         self.deep_cnn.train(self.n_episodes)
+        self.deep_cnn.test().evaluate()
         self.cnn_gru.train(self.n_episodes)
-        self.cnn_attn.train(self.n_episodes)        
+        self.cnn_gru.test().evaluate()
+        self.cnn_attn.train(self.n_episodes)     
+        self.cnn_attn.test().evaluate()   
 
     def evaluate_sensitivity(self):
         key = None
@@ -586,8 +599,7 @@ if __name__ == '__main__':
         run.train()
         run.evaluate_sensitivity()
         pbar.update(1)
-
-    run.save_experiment()
+        run.save_experiment()
 
     run = SensitivityRun(
         dataset_name,
