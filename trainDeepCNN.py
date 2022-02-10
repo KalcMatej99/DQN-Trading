@@ -30,8 +30,6 @@ parser.add_argument('--dataset-name', default="BTC_USDT_15m",
                     help='Name of the data inside the Data folder')
 parser.add_argument('--nep', type=int, default=20,
                     help='Number of episodes')
-parser.add_argument('--window_size', type=int, default=3,
-                    help='Window size for sequential models')
 parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--load_dataset_from_file', type=Boolean, default=False,
@@ -490,11 +488,8 @@ class SensitivityRun:
 
 
 if __name__ == '__main__':
-    gamma_list = [0.9, 0.8, 0.7]
-    batch_size_list = [16, 64, 256]
-    replay_memory_size_list = [16, 64, 256]
     n_step_list = [5, 10, 20]
-    window_size_list = [1, 5, 10, 25, 50, 100]
+    window_size_list = [5, 10, 25, 50, 100]
     dataset_name = args.dataset_name
     n_episodes = args.nep
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
@@ -507,7 +502,7 @@ if __name__ == '__main__':
     n_step_default = 12
     window_size_default = 10
 
-    pbar = tqdm(len(n_step_list) + len(gamma_list) + len(batch_size_list) + len(replay_memory_size_list))
+    pbar = tqdm(len(n_step_list) + len(window_size_list))
 
 
     run = SensitivityRun(
@@ -553,6 +548,8 @@ if __name__ == '__main__':
         run.evaluate_sensitivity()
         pbar.update(1)
         run.save_experiment()
+
+
 
 
     
