@@ -558,13 +558,9 @@ class SensitivityRun:
         self.plot_and_save_sensitivity()
         self.save_portfolios()
 
-
 if __name__ == '__main__':
-    gamma_list = [0.9, 0.8, 0.7]
-    batch_size_list = [16, 64, 256]
-    replay_memory_size_list = [16, 64, 256]
-    n_step_list = [1, 5, 10, 20, 60, 120, 5 * 60, 24 * 60]
-    window_size = args.window_size
+    n_step_list = [1, 5, 10, 20, 60, 120, 180, 60 * 12, 60 * 24]
+    window_size_list = [5, 10, 25, 50, 100]
     dataset_name = args.dataset_name
     n_episodes = args.nep
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
@@ -574,9 +570,10 @@ if __name__ == '__main__':
     gamma_default = 0.8
     batch_size_default = 16
     replay_memory_size_default = 32
-    n_step_default = 8
+    n_step_default = 12
+    window_size_default = 10
 
-    pbar = tqdm(len(n_step_list) + len(gamma_list) + len(batch_size_list) + len(replay_memory_size_list))
+    pbar = tqdm(len(n_step_list) + len(window_size_list))
 
 
     run = SensitivityRun(
@@ -588,13 +585,13 @@ if __name__ == '__main__':
         target_update,
         n_episodes,
         n_step_default,
-        window_size,
+        window_size_default,
         device,
-        evaluation_parameter='n_step',
+        evaluation_parameter='window_size',
         transaction_cost=0.001)
         
-    for n_step in n_step_list:
-        run.n_step = n_step
+    for window_size in window_size_list:
+        run.window_size = window_size
         run.reset()
         run.train()
         run.evaluate_sensitivity()
@@ -610,66 +607,21 @@ if __name__ == '__main__':
         target_update,
         n_episodes,
         n_step_default,
-        window_size,
+        window_size_default,
         device,
-        evaluation_parameter='gamma',
+        evaluation_parameter='n_step',
         transaction_cost=0.001)
-
-    for gamma in gamma_list:
-        run.gamma = gamma
+        
+    for n_step in n_step_list:
+        run.n_step = n_step
         run.reset()
         run.train()
         run.evaluate_sensitivity()
         pbar.update(1)
+        run.save_experiment()
 
-    run.save_experiment()
 
-    # test batch-size
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes,
-        n_step_default,
-        window_size,
-        device,
-        evaluation_parameter='batch size',
-        transaction_cost=0.001)
 
-    for batch_size in batch_size_list:
-        run.batch_size = batch_size
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
 
-    run.save_experiment()
-
-    # test replay memory size
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes,
-        n_step_default,
-        window_size,
-        device,
-        evaluation_parameter='replay memory size',
-        transaction_cost=0.001)
-
-    for replay_memory_size in replay_memory_size_list:
-        run.replay_memory_size = replay_memory_size
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-
-    run.save_experiment()
     
     pbar.close()
