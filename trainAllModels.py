@@ -28,8 +28,6 @@ from utils import save_pkl, load_pkl
 parser = argparse.ArgumentParser(description='DQN-Trader arguments')
 parser.add_argument('--dataset-name', default="BTC_USDT_15m",
                     help='Name of the data inside the Data folder')
-parser.add_argument('--nep', type=int, default=20,
-                    help='Number of episodes')
 parser.add_argument('--window_size', type=int, default=3,
                     help='Window size for sequential models')
 parser.add_argument('--cuda', action="store_true",
@@ -497,6 +495,10 @@ class SensitivityRun:
             key = self.replay_memory_size
         elif self.evaluation_parameter == 'n_step':
             key = self.n_step
+        elif self.evaluation_parameter == 'window_size':
+            key = self.window_size
+        elif self.evaluation_parameter == 'n_episodes':
+            key = self.n_episodes
 
         if args.use_patterns:
             self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
@@ -560,9 +562,9 @@ class SensitivityRun:
 
 if __name__ == '__main__':
     n_step_list = [1, 5, 10, 20, 60, 120, 180, 60 * 12, 60 * 24]
-    window_size_list = [5, 10, 25, 50, 100]
+    window_size_list = [5, 10, 25, 50, 100, 200]
+    n_episodes_list = [5, 10, 50, 100]
     dataset_name = args.dataset_name
-    n_episodes = args.nep
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
     feature_size = 64
     target_update = 5
@@ -570,8 +572,9 @@ if __name__ == '__main__':
     gamma_default = 0.8
     batch_size_default = 16
     replay_memory_size_default = 32
-    n_step_default = 12
+    n_step_default = 8
     window_size_default = 10
+    n_episodes_default = 5
 
     pbar = tqdm(len(n_step_list) + len(window_size_list))
 
@@ -583,7 +586,7 @@ if __name__ == '__main__':
         replay_memory_size_default,
         feature_size,
         target_update,
-        n_episodes,
+        n_episodes_default,
         n_step_default,
         window_size_default,
         device,
@@ -605,7 +608,7 @@ if __name__ == '__main__':
         replay_memory_size_default,
         feature_size,
         target_update,
-        n_episodes,
+        n_episodes_default,
         n_step_default,
         window_size_default,
         device,
@@ -620,8 +623,26 @@ if __name__ == '__main__':
         pbar.update(1)
         run.save_experiment()
 
-
-
-
+    run = SensitivityRun(
+        dataset_name,
+        gamma_default,
+        batch_size_default,
+        replay_memory_size_default,
+        feature_size,
+        target_update,
+        n_episodes_default,
+        n_step_default,
+        window_size_default,
+        device,
+        evaluation_parameter='n_step',
+        transaction_cost=0.001)
+        
+    for n_episodes in n_episodes_list:
+        run.n_episodes = n_episodes
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
+        run.save_experiment()
     
     pbar.close()

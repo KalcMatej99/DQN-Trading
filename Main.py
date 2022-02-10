@@ -176,6 +176,8 @@ class SensitivityRun:
             key = self.replay_memory_size
         elif self.evaluation_parameter == 'n_step':
             key = self.n_step
+        elif self.evaluation_parameter == 'window_size':
+            key = self.window_size
 
         self.test_portfolios['MLP-windowed'][key] = self.mlp_windowed.test().get_daily_portfolio_value()
 
