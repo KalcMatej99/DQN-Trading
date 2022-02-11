@@ -31,12 +31,11 @@ class DataAutoPatternExtractionAgent(Data):
 
         self.data_kind = 'AutoPatternExtraction'
 
-        self.data_preprocessed = data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm', "adx_norm", "rsi_norm", "fastd_norm", "fastk_norm", "tema9_norm", "tema21_norm", "tema100_norm",\
-                'ma9_norm', 'ma21_norm', 'ma9_ma21_norm', 'ma100_norm', 'macd_norm', 'mom_norm', 'roc_norm', 'tema9_tema21_norm']].values
+        self.data_preprocessed = data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm']].values
         self.state_mode = state_mode
 
         if state_mode == 1:  # OHLC
-            self.state_size = 20
+            self.state_size = 5
 
         elif state_mode == 2:  # OHLC + trend
             self.state_size = 5 + 8
@@ -44,7 +43,7 @@ class DataAutoPatternExtractionAgent(Data):
             self.data_preprocessed = np.concatenate([self.data_preprocessed, trend], axis=1)
 
         elif state_mode == 3:  # OHLC + trend + %body + %upper-shadow + %lower-shadow
-            self.state_size = 20 + 4
+            self.state_size = 5 + 4
             candle_data = self.data.loc[:, ['trend', '%body', '%upper-shadow', '%lower-shadow']].values
             self.data_preprocessed = np.concatenate([self.data_preprocessed, candle_data], axis=1)
 
@@ -54,18 +53,15 @@ class DataAutoPatternExtractionAgent(Data):
 
         elif state_mode == 5:
             # window_size * OHLC
-            numb_of_elem = 20
+            numb_of_elem = 5
             self.state_size = window_size * (numb_of_elem)
             temp_states = []
-            for i, row in self.data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm', "adx_norm", "rsi_norm", "fastd_norm", "fastk_norm", "tema9_norm", "tema21_norm", "tema100_norm",\
-                'ma9_norm', 'ma21_norm', 'ma9_ma21_norm', 'ma100_norm', 'macd_norm', 'mom_norm', 'roc_norm', 'tema9_tema21_norm']].iterrows():
+            for i, row in self.data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm']].iterrows():
                 if i < window_size - 1:
-                    temp_states += [row.volume_norm, row.open_norm, row.high_norm, row.low_norm, row.close_norm, row.adx_norm, row.rsi_norm, row.fastd_norm, row.fastk_norm, row.tema9_norm, row.tema21_norm, row.tema100_norm, \
-                        row.ma9_norm, row.ma21_norm, row.ma9_ma21_norm, row.ma100_norm, row.macd_norm, row.mom_norm, row.roc_norm, row.tema9_tema21_norm]
+                    temp_states += [row.volume_norm, row.open_norm, row.high_norm, row.low_norm, row.close_norm]
                 else:
                     # The trend of the k'th index shows the trend of the whole candles inside the window
-                    temp_states += [row.volume_norm, row.open_norm, row.high_norm, row.low_norm, row.close_norm, row.adx_norm, row.rsi_norm, row.fastd_norm, row.fastk_norm, row.tema9_norm, row.tema21_norm, row.tema100_norm, \
-                        row.ma9_norm, row.ma21_norm, row.ma9_ma21_norm, row.ma100_norm, row.macd_norm, row.mom_norm, row.roc_norm, row.tema9_tema21_norm]
+                    temp_states += [row.volume_norm, row.open_norm, row.high_norm, row.low_norm, row.close_norm]
                     self.states.append(np.array(temp_states))
                     # removing the elements from the vector
                     temp_states = temp_states[(numb_of_elem-1):-1]

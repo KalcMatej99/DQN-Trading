@@ -129,6 +129,8 @@ class YahooFinanceDataLoader:
         data['mean_candle'] = data.close
         data['adx'] = ta.ADX(data['high'], data['low'], data["close"])
         data['rsi'] = ta.RSI(data['close'])
+        data['rsi70'] = data['rsi'] > 70
+        data['rsi30'] = data['rsi'] < 30
         stoch_fast = ta.STOCHF(data)
         data['fastd'] = stoch_fast['fastd']
         data['fastk'] = stoch_fast['fastk']

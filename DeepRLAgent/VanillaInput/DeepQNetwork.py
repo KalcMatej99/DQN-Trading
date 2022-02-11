@@ -7,9 +7,11 @@ class DQN(nn.Module):
     def __init__(self, state_length, action_length):
         super(DQN, self).__init__()
         self.policy_network = nn.Sequential(
-            nn.Linear(state_length, 32),
-            nn.ReLU(),
-            nn.Linear(32, action_length))
+            nn.Linear(state_length, 128),
+            nn.BatchNorm1d(128),
+            nn.Linear(128, 256),
+            nn.BatchNorm1d(256),
+            nn.Linear(256, action_length))
 
         # self.layer1 = nn.Linear(state_length, 128)
         # self.bn1 = nn.BatchNorm1d(128)
