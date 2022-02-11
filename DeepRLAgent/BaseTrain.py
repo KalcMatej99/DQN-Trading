@@ -31,7 +31,7 @@ class BaseTrain:
                  model_kind,
                  state_mode=1,
                  window_size=1,
-                 transaction_cost=0.0,
+                 transaction_cost=0.001,
                  BATCH_SIZE=30,
                  GAMMA=0.7,
                  ReplayMemorySize=50,

@@ -634,7 +634,7 @@ if __name__ == '__main__':
         n_step_default,
         window_size_default,
         device,
-        evaluation_parameter='n_step',
+        evaluation_parameter='n_episodes',
         transaction_cost=0.001)
         
     for n_episodes in n_episodes_list:
