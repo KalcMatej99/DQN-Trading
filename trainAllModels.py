@@ -578,6 +578,27 @@ if __name__ == '__main__':
 
     pbar = tqdm(len(window_size_list) + len(n_step_list) + len(n_episodes_list))
 
+    run = SensitivityRun(
+        dataset_name,
+        gamma_default,
+        batch_size_default,
+        replay_memory_size_default,
+        feature_size,
+        target_update,
+        n_episodes_default,
+        n_step_default,
+        window_size_default,
+        device,
+        evaluation_parameter='n_step',
+        transaction_cost=0.001)
+        
+    for n_step in n_step_list:
+        run.n_step = n_step
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
+        run.save_experiment()
     
     run = SensitivityRun(
         dataset_name,
@@ -623,27 +644,6 @@ if __name__ == '__main__':
         pbar.update(1)
         run.save_experiment()
 
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes_default,
-        n_step_default,
-        window_size_default,
-        device,
-        evaluation_parameter='n_step',
-        transaction_cost=0.001)
-        
-    for n_step in n_step_list:
-        run.n_step = n_step
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-        run.save_experiment()
 
     
     pbar.close()
