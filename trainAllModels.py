@@ -576,9 +576,9 @@ if __name__ == '__main__':
     window_size_default = 10
     n_episodes_default = 5
 
-    pbar = tqdm(len(n_step_list) + len(window_size_list))
+    pbar = tqdm(len(n_step_list) + len(n_episodes_list))
 
-
+    '''
     run = SensitivityRun(
         dataset_name,
         gamma_default,
@@ -600,6 +600,7 @@ if __name__ == '__main__':
         run.evaluate_sensitivity()
         pbar.update(1)
         run.save_experiment()
+    '''
 
     run = SensitivityRun(
         dataset_name,
