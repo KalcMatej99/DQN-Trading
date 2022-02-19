@@ -21,7 +21,7 @@ class DataSequencePrediction(Data):
         self.model.load_state_dict(torch.load(file_path))
         self.model.eval()
 
-        self.data_preprocessed = data.loc[:, ['open_norm', 'high_norm', 'low_norm', 'close_norm']].as_matrix()
+        self.data_preprocessed = data.loc[:, ['open', 'high', 'low', 'close']].as_matrix()
 
         self.windowed_data = []
         # We ignore the first window_size elements of the data because of trend

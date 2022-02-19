@@ -25,7 +25,7 @@ class DataSequential(Data):
         self.data_kind = 'LSTMSequential'
         self.state_size = 4
 
-        self.data_preprocessed = data.loc[:, ['open_norm', 'high_norm', 'low_norm', 'close_norm']].values
+        self.data_preprocessed = data.loc[:, ['open', 'high', 'low', 'close']].values
 
         # We ignore the first window_size elements of the data because of trend
         # for i in range(window_size - 1, len(self.data_preprocessed) - window_size + 1):

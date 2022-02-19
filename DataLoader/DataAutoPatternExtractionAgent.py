@@ -31,7 +31,7 @@ class DataAutoPatternExtractionAgent(Data):
 
         self.data_kind = 'AutoPatternExtraction'
 
-        self.data_preprocessed = data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm']].values
+        self.data_preprocessed = data.loc[:, ['volume', 'open', 'high', 'low', 'close']].values
         self.state_mode = state_mode
 
         if state_mode == 1:  # OHLC
@@ -56,12 +56,12 @@ class DataAutoPatternExtractionAgent(Data):
             numb_of_elem = 5
             self.state_size = window_size * (numb_of_elem)
             temp_states = []
-            for i, row in self.data.loc[:, ['volume_norm', 'open_norm', 'high_norm', 'low_norm', 'close_norm']].iterrows():
+            for i, row in self.data.loc[:, ['volume', 'open', 'high', 'low', 'close']].iterrows():
                 if i < window_size - 1:
-                    temp_states += [row.volume_norm, row.open_norm, row.high_norm, row.low_norm, row.close_norm]
+                    temp_states += [row.volume, row.open, row.high, row.low, row.close]
                 else:
                     # The trend of the k'th index shows the trend of the whole candles inside the window
-                    temp_states += [row.volume_norm, row.open_norm, row.high_norm, row.low_norm, row.close_norm]
+                    temp_states += [row.volume, row.open, row.high, row.low, row.close]
                     self.states.append(np.array(temp_states))
                     # removing the elements from the vector
                     temp_states = temp_states[(numb_of_elem-1):-1]
