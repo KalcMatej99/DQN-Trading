@@ -5,13 +5,7 @@ from DataLoader.DataForPatternBasedAgent import DataForPatternBasedAgent
 from DataLoader.DataAutoPatternExtractionAgent import DataAutoPatternExtractionAgent
 from DataLoader.DataSequential import DataSequential
 
-from DeepRLAgent.MLPEncoder.Train import Train as SimpleMLP
 from DeepRLAgent.SimpleCNNEncoder.Train import Train as SimpleCNN
-from EncoderDecoderAgent.GRU.Train import Train as GRU
-from EncoderDecoderAgent.CNN.Train import Train as CNN
-from EncoderDecoderAgent.CNN2D.Train import Train as CNN2d
-from EncoderDecoderAgent.CNNAttn.Train import Train as CNN_ATTN
-from EncoderDecoderAgent.CNN_GRU.Train import Train as CNN_GRU
 
 # Imports for Deep RL Agent
 from DeepRLAgent.VanillaInput.Train import Train as DeepRL
@@ -64,7 +58,8 @@ class SensitivityRun:
                  window_size,
                  device,
                  evaluation_parameter='gamma',
-                 transaction_cost=0.02):
+                 transaction_cost=0.02,
+                 window_size_n_step = ""):
         """
 
         @param data_loader:
@@ -95,6 +90,7 @@ class SensitivityRun:
         self.window_size = window_size
         self.device = device
         self.evaluation_parameter = evaluation_parameter
+        self.window_size_n_step = window_size_n_step
         # The state mode is only for autoPatternExtractionAgent. Therefore, for pattern inputs, the state mode would be
         # set to None, because it can be recovered from the name of the data loader (e.g. dataTrain_patternBased).
 
@@ -134,33 +130,9 @@ class SensitivityRun:
         self.reset()
 
         if args.use_patterns:
-            self.test_portfolios = {'DQN-pattern': {},
-                                    'DQN-vanilla': {},
-                                    'DQN-candlerep': {},
-                                    'DQN-windowed': {},
-                                    'MLP-pattern': {},
-                                    'MLP-vanilla': {},
-                                    'MLP-candlerep': {},
-                                    'MLP-windowed': {},
-                                    'CNN1d': {},
-                                    'CNN2d': {},
-                                    'GRU': {},
-                                    'Deep-CNN': {},
-                                    'CNN-GRU': {},
-                                    'CNN-ATTN': {}}
+            self.test_portfolios = {'CNN1d': {}}
         else:
-            self.test_portfolios = {'DQN-vanilla': {},
-                                    'DQN-candlerep': {},
-                                    'DQN-windowed': {},
-                                    'MLP-vanilla': {},
-                                    'MLP-candlerep': {},
-                                    'MLP-windowed': {},
-                                    'CNN1d': {},
-                                    'CNN2d': {},
-                                    'GRU': {},
-                                    'Deep-CNN': {},
-                                    'CNN-GRU': {},
-                                    'CNN-ATTN': {}}
+            self.test_portfolios = {'CNN1d': {}}
 
 
     def reset(self):
@@ -265,116 +237,6 @@ class SensitivityRun:
                                                   self.transaction_cost)
 
     def load_agents(self):
-        if args.use_patterns:
-            self.dqn_pattern = DeepRL(self.data_loader,
-                                    self.dataTrain_patternBased,
-                                    self.dataTest_patternBased,
-                                    self.dataset_name,
-                                    None,
-                                    self.window_size,
-                                    self.transaction_cost,
-                                    BATCH_SIZE=self.batch_size,
-                                    GAMMA=self.gamma,
-                                    ReplayMemorySize=self.replay_memory_size,
-                                    TARGET_UPDATE=self.target_update,
-                                    n_step=self.n_step)
-
-        self.dqn_vanilla = DeepRL(self.data_loader,
-                                  self.dataTrain_autoPatternExtractionAgent,
-                                  self.dataTest_autoPatternExtractionAgent,
-                                  self.dataset_name,
-                                  self.STATE_MODE_OHLC,
-                                  self.window_size,
-                                  self.transaction_cost,
-                                  BATCH_SIZE=self.batch_size,
-                                  GAMMA=self.gamma,
-                                  ReplayMemorySize=self.replay_memory_size,
-                                  TARGET_UPDATE=self.target_update,
-                                  n_step=self.n_step)
-
-        self.dqn_candle_rep = DeepRL(self.data_loader,
-                                     self.dataTrain_autoPatternExtractionAgent_candle_rep,
-                                     self.dataTest_autoPatternExtractionAgent_candle_rep,
-                                     self.dataset_name,
-                                     self.STATE_MODE_CANDLE_REP,
-                                     self.window_size,
-                                     self.transaction_cost,
-                                     BATCH_SIZE=self.batch_size,
-                                     GAMMA=self.gamma,
-                                     ReplayMemorySize=self.replay_memory_size,
-                                     TARGET_UPDATE=self.target_update,
-                                     n_step=self.n_step)
-
-        self.dqn_windowed = DeepRL(self.data_loader,
-                                   self.dataTrain_autoPatternExtractionAgent_windowed,
-                                   self.dataTest_autoPatternExtractionAgent_windowed,
-                                   self.dataset_name,
-                                   self.STATE_MODE_WINDOWED,
-                                   self.window_size,
-                                   self.transaction_cost,
-                                   BATCH_SIZE=self.batch_size,
-                                   GAMMA=self.gamma,
-                                   ReplayMemorySize=self.replay_memory_size,
-                                   TARGET_UPDATE=self.target_update,
-                                   n_step=self.n_step)
-
-        if args.use_patterns:
-            self.mlp_pattern = SimpleMLP(self.data_loader,
-                                        self.dataTrain_patternBased,
-                                        self.dataTest_patternBased,
-                                        self.dataset_name,
-                                        None,
-                                        self.window_size,
-                                        self.transaction_cost,
-                                        self.feature_size,
-                                        BATCH_SIZE=self.batch_size,
-                                        GAMMA=self.gamma,
-                                        ReplayMemorySize=self.replay_memory_size,
-                                        TARGET_UPDATE=self.target_update,
-                                        n_step=self.n_step)
-
-        self.mlp_vanilla = SimpleMLP(self.data_loader,
-                                     self.dataTrain_autoPatternExtractionAgent,
-                                     self.dataTest_autoPatternExtractionAgent,
-                                     self.dataset_name,
-                                     self.STATE_MODE_OHLC,
-                                     self.window_size,
-                                     self.transaction_cost,
-                                     self.feature_size,
-                                     BATCH_SIZE=self.batch_size,
-                                     GAMMA=self.gamma,
-                                     ReplayMemorySize=self.replay_memory_size,
-                                     TARGET_UPDATE=self.target_update,
-                                     n_step=self.n_step)
-
-        self.mlp_candle_rep = SimpleMLP(self.data_loader,
-                                        self.dataTrain_autoPatternExtractionAgent_candle_rep,
-                                        self.dataTest_autoPatternExtractionAgent_candle_rep,
-                                        self.dataset_name,
-                                        self.STATE_MODE_CANDLE_REP,
-                                        self.window_size,
-                                        self.transaction_cost,
-                                        self.feature_size,
-                                        BATCH_SIZE=self.batch_size,
-                                        GAMMA=self.gamma,
-                                        ReplayMemorySize=self.replay_memory_size,
-                                        TARGET_UPDATE=self.target_update,
-                                        n_step=self.n_step)
-
-        self.mlp_windowed = SimpleMLP(self.data_loader,
-                                      self.dataTrain_autoPatternExtractionAgent_windowed,
-                                      self.dataTest_autoPatternExtractionAgent_windowed,
-                                      self.dataset_name,
-                                      self.STATE_MODE_WINDOWED,
-                                      self.window_size,
-                                      self.transaction_cost,
-                                      self.feature_size,
-                                      BATCH_SIZE=self.batch_size,
-                                      GAMMA=self.gamma,
-                                      ReplayMemorySize=self.replay_memory_size,
-                                      TARGET_UPDATE=self.target_update,
-                                      n_step=self.n_step)
-
         self.cnn1d = SimpleCNN(self.data_loader,
                                self.dataTrain_autoPatternExtractionAgent,
                                self.dataTest_autoPatternExtractionAgent,
@@ -389,69 +251,6 @@ class SensitivityRun:
                                TARGET_UPDATE=self.target_update,
                                n_step=self.n_step)
 
-        self.cnn2d = CNN2d(self.data_loader,
-                           self.dataTrain_sequential,
-                           self.dataTest_sequential,
-                           self.dataset_name,
-                           self.feature_size,
-                           self.transaction_cost,
-                           BATCH_SIZE=self.batch_size,
-                           GAMMA=self.gamma,
-                           ReplayMemorySize=self.replay_memory_size,
-                           TARGET_UPDATE=self.target_update,
-                           n_step=self.n_step,
-                           window_size=self.window_size)
-
-        self.gru = GRU(self.data_loader,
-                       self.dataTrain_sequential,
-                       self.dataTest_sequential,
-                       self.dataset_name,
-                       self.transaction_cost,
-                       self.feature_size,
-                       BATCH_SIZE=self.batch_size,
-                       GAMMA=self.gamma,
-                       ReplayMemorySize=self.replay_memory_size,
-                       TARGET_UPDATE=self.target_update,
-                       n_step=self.n_step,
-                       window_size=self.window_size)
-
-        self.deep_cnn = CNN(self.data_loader,
-                            self.dataTrain_sequential,
-                            self.dataTest_sequential,
-                            self.dataset_name,
-                            self.transaction_cost,
-                            BATCH_SIZE=self.batch_size,
-                            GAMMA=self.gamma,
-                            ReplayMemorySize=self.replay_memory_size,
-                            TARGET_UPDATE=self.target_update,
-                            n_step=self.n_step,
-                            window_size=self.window_size)
-
-        self.cnn_gru = CNN_GRU(self.data_loader,
-                               self.dataTrain_sequential,
-                               self.dataTest_sequential,
-                               self.dataset_name,
-                               self.transaction_cost,
-                               self.feature_size,
-                               BATCH_SIZE=self.batch_size,
-                               GAMMA=self.gamma,
-                               ReplayMemorySize=self.replay_memory_size,
-                               TARGET_UPDATE=self.target_update,
-                               n_step=self.n_step,
-                               window_size=self.window_size)
-
-        self.cnn_attn = CNN_ATTN(self.data_loader,
-                                 self.dataTrain_sequential,
-                                 self.dataTest_sequential,
-                                 self.dataset_name,
-                                 self.transaction_cost,
-                                 self.feature_size,
-                                 BATCH_SIZE=self.batch_size,
-                                 GAMMA=self.gamma,
-                                 ReplayMemorySize=self.replay_memory_size,
-                                 TARGET_UPDATE=self.target_update,
-                                 n_step=self.n_step,
-                                 window_size=self.window_size)
 
     def train(self):
         self.cnn1d.train(self.n_episodes)
@@ -471,6 +270,8 @@ class SensitivityRun:
             key = self.window_size
         elif self.evaluation_parameter == 'n_episodes':
             key = self.n_episodes
+        elif self.evaluation_parameter == 'window_size_n_step':
+            key = f"{self.window_size}_{self.n_step}"
 
         self.test_portfolios['CNN1d'][key] = self.cnn1d.test().get_daily_portfolio_value()
 
@@ -516,8 +317,8 @@ class SensitivityRun:
 
 if __name__ == '__main__':
     n_step_list = [1, 5, 10, 20, 60, 120, 180, 60 * 12, 60 * 24]
-    window_size_list = [5, 10, 25, 50, 100, 200]
-    n_episodes_list = [5, 20, 50, 100]
+    window_size_list = [1, 5, 10, 20, 60, 120, 180, 60 * 12, 60 * 24]
+    #n_episodes_list = [5, 20, 50, 100]
     dataset_name = args.dataset_name
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
     feature_size = 64
@@ -530,29 +331,8 @@ if __name__ == '__main__':
     window_size_default = 10
     n_episodes_default = 5
 
-    pbar = tqdm(len(window_size_list) + len(n_step_list) + len(n_episodes_list))
-    
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes_default,
-        n_step_default,
-        window_size_default,
-        device,
-        evaluation_parameter='n_episodes',
-        transaction_cost=0.001)
-        
-    for n_episodes in n_episodes_list:
-        run.n_episodes = n_episodes
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-        run.save_experiment()
+    pbar = tqdm(len(window_size_list) * len(n_step_list))
+
 
     run = SensitivityRun(
         dataset_name,
@@ -565,39 +345,19 @@ if __name__ == '__main__':
         n_step_default,
         window_size_default,
         device,
-        evaluation_parameter='n_step',
+        evaluation_parameter='window_size_n_step',
         transaction_cost=0.001)
-        
-    for n_step in n_step_list:
-        run.n_step = n_step
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-        run.save_experiment()
-    
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes_default,
-        n_step_default,
-        window_size_default,
-        device,
-        evaluation_parameter='window_size',
-        transaction_cost=0.001)
-        
+
     for window_size in window_size_list:
-        run.window_size = window_size
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-        run.save_experiment()
+        for n_step in n_step_list:
+            run.window_size = window_size
+            run.n_step = n_step
+            run.window_size_n_step = f"{window_size}_{n_step}"
 
-
+            run.reset()
+            run.train()
+            run.evaluate_sensitivity()
+            pbar.update(1)
+            run.save_experiment()
     
     pbar.close()
