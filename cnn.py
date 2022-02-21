@@ -329,7 +329,7 @@ if __name__ == '__main__':
     replay_memory_size_default = 32
     n_step_default = 8
     window_size_default = 10
-    n_episodes_default = 50
+    n_episodes_default = 10
 
     pbar = tqdm(len(window_size_list) * len(n_step_list))
 
