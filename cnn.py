@@ -94,34 +94,11 @@ class SensitivityRun:
         # The state mode is only for autoPatternExtractionAgent. Therefore, for pattern inputs, the state mode would be
         # set to None, because it can be recovered from the name of the data loader (e.g. dataTrain_patternBased).
 
-        self.STATE_MODE_OHLC = 1
-        self.STATE_MODE_CANDLE_REP = 3  # %body + %upper-shadow + %lower-shadow
         self.STATE_MODE_WINDOWED = 5  # window with k candles inside + the trend of those candles
 
-        self.dataTrain_autoPatternExtractionAgent = None
-        self.dataTest_autoPatternExtractionAgent = None
-        self.dataTrain_patternBased = None
-        self.dataTest_patternBased = None
-        self.dataTrain_autoPatternExtractionAgent_candle_rep = None
-        self.dataTest_autoPatternExtractionAgent_candle_rep = None
         self.dataTrain_autoPatternExtractionAgent_windowed = None
         self.dataTest_autoPatternExtractionAgent_windowed = None
-        self.dataTrain_sequential = None
-        self.dataTest_sequential = None
-        self.dqn_pattern = None
-        self.dqn_vanilla = None
-        self.dqn_candle_rep = None
-        self.dqn_windowed = None
-        self.mlp_pattern = None
-        self.mlp_vanilla = None
-        self.mlp_candle_rep = None
-        self.mlp_windowed = None
         self.cnn1d = None
-        self.cnn2d = None
-        self.gru = None
-        self.deep_cnn = None
-        self.cnn_gru = None
-        self.cnn_attn = None
         self.experiment_path = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                             'Results/' + self.evaluation_parameter + '/')
         if not os.path.exists(self.experiment_path):
@@ -140,65 +117,6 @@ class SensitivityRun:
         self.load_agents()
 
     def load_data(self):
-        self.dataTrain_autoPatternExtractionAgent = \
-            DataAutoPatternExtractionAgent(self.data_loader.data_train,
-                                           self.STATE_MODE_OHLC,
-                                           'action_auto_pattern_extraction',
-                                           self.device,
-                                           self.gamma,
-                                           self.n_step,
-                                           self.batch_size,
-                                           self.window_size,
-                                           self.transaction_cost)
-
-        self.dataTest_autoPatternExtractionAgent = \
-            DataAutoPatternExtractionAgent(self.data_loader.data_test,
-                                           self.STATE_MODE_OHLC,
-                                           'action_auto_pattern_extraction',
-                                           self.device,
-                                           self.gamma,
-                                           self.n_step,
-                                           self.batch_size,
-                                           self.window_size,
-                                           self.transaction_cost)
-
-        self.dataTrain_patternBased = \
-            DataForPatternBasedAgent(self.data_loader.data_train,
-                                     self.data_loader.patterns,
-                                     'action_pattern',
-                                     self.device, self.gamma,
-                                     self.n_step, self.batch_size,
-                                     self.transaction_cost)
-
-        self.dataTest_patternBased = \
-            DataForPatternBasedAgent(self.data_loader.data_test,
-                                     self.data_loader.patterns,
-                                     'action_pattern',
-                                     self.device,
-                                     self.gamma,
-                                     self.n_step,
-                                     self.batch_size,
-                                     self.transaction_cost)
-
-        self.dataTrain_autoPatternExtractionAgent_candle_rep = \
-            DataAutoPatternExtractionAgent(
-                self.data_loader.data_train,
-                self.STATE_MODE_CANDLE_REP,
-                'action_candle_rep',
-                self.device,
-                self.gamma, self.n_step, self.batch_size,
-                self.window_size,
-                self.transaction_cost)
-        self.dataTest_autoPatternExtractionAgent_candle_rep = \
-            DataAutoPatternExtractionAgent(self.data_loader.data_test,
-                                           self.STATE_MODE_CANDLE_REP,
-                                           'action_candle_rep',
-                                           self.device,
-                                           self.gamma, self.n_step,
-                                           self.batch_size,
-                                           self.window_size,
-                                           self.transaction_cost)
-
         self.dataTrain_autoPatternExtractionAgent_windowed = \
             DataAutoPatternExtractionAgent(self.data_loader.data_train,
                                            self.STATE_MODE_WINDOWED,
@@ -218,30 +136,12 @@ class SensitivityRun:
                                            self.window_size,
                                            self.transaction_cost)
 
-        self.dataTrain_sequential = DataSequential(self.data_loader.data_train,
-                                                   'action_sequential',
-                                                   self.device,
-                                                   self.gamma,
-                                                   self.n_step,
-                                                   self.batch_size,
-                                                   self.window_size,
-                                                   self.transaction_cost)
-
-        self.dataTest_sequential = DataSequential(self.data_loader.data_test,
-                                                  'action_sequential',
-                                                  self.device,
-                                                  self.gamma,
-                                                  self.n_step,
-                                                  self.batch_size,
-                                                  self.window_size,
-                                                  self.transaction_cost)
-
     def load_agents(self):
         self.cnn1d = SimpleCNN(self.data_loader,
                                self.dataTrain_autoPatternExtractionAgent_windowed,
                                self.dataTest_autoPatternExtractionAgent_windowed,
                                self.dataset_name,
-                               self.STATE_MODE_OHLC,
+                               self.STATE_MODE_WINDOWED,
                                self.window_size,
                                self.transaction_cost,
                                self.feature_size,

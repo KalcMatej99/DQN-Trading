@@ -98,27 +98,13 @@ class SensitivityRun:
         # The state mode is only for autoPatternExtractionAgent. Therefore, for pattern inputs, the state mode would be
         # set to None, because it can be recovered from the name of the data loader (e.g. dataTrain_patternBased).
 
-        self.STATE_MODE_OHLC = 1
-        self.STATE_MODE_CANDLE_REP = 3  # %body + %upper-shadow + %lower-shadow
         self.STATE_MODE_WINDOWED = 5  # window with k candles inside + the trend of those candles
 
-        self.dataTrain_autoPatternExtractionAgent = None
-        self.dataTest_autoPatternExtractionAgent = None
-        self.dataTrain_patternBased = None
-        self.dataTest_patternBased = None
-        self.dataTrain_autoPatternExtractionAgent_candle_rep = None
-        self.dataTest_autoPatternExtractionAgent_candle_rep = None
         self.dataTrain_autoPatternExtractionAgent_windowed = None
         self.dataTest_autoPatternExtractionAgent_windowed = None
         self.dataTrain_sequential = None
         self.dataTest_sequential = None
-        self.dqn_pattern = None
-        self.dqn_vanilla = None
-        self.dqn_candle_rep = None
         self.dqn_windowed = None
-        self.mlp_pattern = None
-        self.mlp_vanilla = None
-        self.mlp_candle_rep = None
         self.mlp_windowed = None
         self.cnn1d = None
         self.cnn2d = None
@@ -133,23 +119,7 @@ class SensitivityRun:
 
         self.reset()
 
-        if args.use_patterns:
-            self.test_portfolios = {'DQN-pattern': {},
-                                    'DQN-vanilla': {},
-                                    'DQN-candlerep': {},
-                                    'DQN-windowed': {},
-                                    'MLP-pattern': {},
-                                    'MLP-vanilla': {},
-                                    'MLP-candlerep': {},
-                                    'MLP-windowed': {},
-                                    'CNN1d': {},
-                                    'CNN2d': {},
-                                    'GRU': {},
-                                    'Deep-CNN': {},
-                                    'CNN-GRU': {},
-                                    'CNN-ATTN': {}}
-        else:
-            self.test_portfolios = {'DQN-windowed': {},
+        self.test_portfolios = {'DQN-windowed': {},
                                     'MLP-windowed': {},
                                     'CNN1d': {},
                                     'CNN2d': {},
@@ -164,65 +134,6 @@ class SensitivityRun:
         self.load_agents()
 
     def load_data(self):
-        self.dataTrain_autoPatternExtractionAgent = \
-            DataAutoPatternExtractionAgent(self.data_loader.data_train,
-                                           self.STATE_MODE_OHLC,
-                                           'action_auto_pattern_extraction',
-                                           self.device,
-                                           self.gamma,
-                                           self.n_step,
-                                           self.batch_size,
-                                           self.window_size,
-                                           self.transaction_cost)
-
-        self.dataTest_autoPatternExtractionAgent = \
-            DataAutoPatternExtractionAgent(self.data_loader.data_test,
-                                           self.STATE_MODE_OHLC,
-                                           'action_auto_pattern_extraction',
-                                           self.device,
-                                           self.gamma,
-                                           self.n_step,
-                                           self.batch_size,
-                                           self.window_size,
-                                           self.transaction_cost)
-
-        self.dataTrain_patternBased = \
-            DataForPatternBasedAgent(self.data_loader.data_train,
-                                     self.data_loader.patterns,
-                                     'action_pattern',
-                                     self.device, self.gamma,
-                                     self.n_step, self.batch_size,
-                                     self.transaction_cost)
-
-        self.dataTest_patternBased = \
-            DataForPatternBasedAgent(self.data_loader.data_test,
-                                     self.data_loader.patterns,
-                                     'action_pattern',
-                                     self.device,
-                                     self.gamma,
-                                     self.n_step,
-                                     self.batch_size,
-                                     self.transaction_cost)
-
-        self.dataTrain_autoPatternExtractionAgent_candle_rep = \
-            DataAutoPatternExtractionAgent(
-                self.data_loader.data_train,
-                self.STATE_MODE_CANDLE_REP,
-                'action_candle_rep',
-                self.device,
-                self.gamma, self.n_step, self.batch_size,
-                self.window_size,
-                self.transaction_cost)
-        self.dataTest_autoPatternExtractionAgent_candle_rep = \
-            DataAutoPatternExtractionAgent(self.data_loader.data_test,
-                                           self.STATE_MODE_CANDLE_REP,
-                                           'action_candle_rep',
-                                           self.device,
-                                           self.gamma, self.n_step,
-                                           self.batch_size,
-                                           self.window_size,
-                                           self.transaction_cost)
-
         self.dataTrain_autoPatternExtractionAgent_windowed = \
             DataAutoPatternExtractionAgent(self.data_loader.data_train,
                                            self.STATE_MODE_WINDOWED,
@@ -293,7 +204,7 @@ class SensitivityRun:
                                self.dataTrain_autoPatternExtractionAgent_windowed,
                                self.dataTest_autoPatternExtractionAgent_windowed,
                                self.dataset_name,
-                               self.STATE_MODE_OHLC,
+                               self.STATE_MODE_WINDOWED,
                                self.window_size,
                                self.transaction_cost,
                                self.feature_size,
@@ -451,7 +362,7 @@ class SensitivityRun:
 
 if __name__ == '__main__':
     n_step_list = [1, 2, 4, 8, 24, 48, 92, 92 * 2]
-    window_size_list = [1, 2, 4, 8, 24, 48, 92, 92 * 2]
+    window_size_list = [4, 8, 24, 48, 92, 92 * 2]
     n_episodes_list = [5, 20, 50]
     dataset_name = args.dataset_name
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
@@ -461,11 +372,55 @@ if __name__ == '__main__':
     gamma_default = 0.8
     batch_size_default = 16
     replay_memory_size_default = 32
-    n_step_default = 10
-    window_size_default = 10
-    n_episodes_default = 5
+    n_step_default = 8
+    window_size_default = 8
+    n_episodes_default = 15
 
     pbar = tqdm(len(window_size_list) + len(n_step_list) + len(n_episodes_list))
+
+    run = SensitivityRun(
+        dataset_name,
+        gamma_default,
+        batch_size_default,
+        replay_memory_size_default,
+        feature_size,
+        target_update,
+        n_episodes_default,
+        n_step_default,
+        window_size_default,
+        device,
+        evaluation_parameter='window_size',
+        transaction_cost=0.001)
+        
+    for window_size in window_size_list:
+        run.window_size = window_size
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
+        run.save_experiment()
+        
+    run = SensitivityRun(
+        dataset_name,
+        gamma_default,
+        batch_size_default,
+        replay_memory_size_default,
+        feature_size,
+        target_update,
+        n_episodes_default,
+        n_step_default,
+        window_size_default,
+        device,
+        evaluation_parameter='n_episodes',
+        transaction_cost=0.001)
+        
+    for n_episodes in n_episodes_list:
+        run.n_episodes = n_episodes
+        run.reset()
+        run.train()
+        run.evaluate_sensitivity()
+        pbar.update(1)
+        run.save_experiment()
     
     run = SensitivityRun(
         dataset_name,
@@ -489,49 +444,7 @@ if __name__ == '__main__':
         pbar.update(1)
         run.save_experiment()
     
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes_default,
-        n_step_default,
-        window_size_default,
-        device,
-        evaluation_parameter='window_size',
-        transaction_cost=0.001)
-        
-    for window_size in window_size_list:
-        run.window_size = window_size
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-        run.save_experiment()
 
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes_default,
-        n_step_default,
-        window_size_default,
-        device,
-        evaluation_parameter='n_episodes',
-        transaction_cost=0.001)
-        
-    for n_episodes in n_episodes_list:
-        run.n_episodes = n_episodes
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-        run.save_experiment()
 
 
     
