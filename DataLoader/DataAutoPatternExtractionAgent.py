@@ -31,19 +31,19 @@ class DataAutoPatternExtractionAgent(Data):
 
         self.data_kind = 'AutoPatternExtraction'
 
-        self.data_preprocessed = data.loc[:, ['volume', 'open', 'high', 'low', 'close']].values
+        self.data_preprocessed = data.loc[:, ['close']].values
         self.state_mode = state_mode
 
         if state_mode == 1:  # OHLC
-            self.state_size = 5
+            self.state_size = 1
 
         elif state_mode == 2:  # OHLC + trend
-            self.state_size = 5 + 8
+            self.state_size = 2
             trend = self.data.loc[:, 'trend'].values[:, np.newaxis]
             self.data_preprocessed = np.concatenate([self.data_preprocessed, trend], axis=1)
 
         elif state_mode == 3:  # OHLC + trend + %body + %upper-shadow + %lower-shadow
-            self.state_size = 5 + 4
+            self.state_size = 1 + 4
             candle_data = self.data.loc[:, ['trend', '%body', '%upper-shadow', '%lower-shadow']].values
             self.data_preprocessed = np.concatenate([self.data_preprocessed, candle_data], axis=1)
 
@@ -53,15 +53,15 @@ class DataAutoPatternExtractionAgent(Data):
 
         elif state_mode == 5:
             # window_size * OHLC
-            numb_of_elem = 5
+            numb_of_elem = 1
             self.state_size = window_size * (numb_of_elem)
             temp_states = []
-            for i, row in self.data.loc[:, ['volume', 'open', 'high', 'low', 'close']].iterrows():
+            for i, row in self.data.loc[:, ['volume', 'close']].iterrows():
                 if i < window_size - 1:
-                    temp_states += [row.volume, row.open, row.high, row.low, row.close]
+                    temp_states += [row.close]
                 else:
                     # The trend of the k'th index shows the trend of the whole candles inside the window
-                    temp_states += [row.volume, row.open, row.high, row.low, row.close]
+                    temp_states += [row.close]
                     self.states.append(np.array(temp_states))
                     # removing the elements from the vector
                     temp_states = temp_states[(numb_of_elem-1):-1]
