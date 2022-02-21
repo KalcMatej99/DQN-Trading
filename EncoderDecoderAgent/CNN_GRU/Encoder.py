@@ -14,8 +14,8 @@ class Encoder(nn.Module):
         self.device = device
 
         self.conv_encoder = nn.Sequential(
-            nn.Conv1d(window_size, window_size, 3),
-            nn.Conv1d(window_size, window_size, 2)
+            nn.Conv1d(window_size, window_size, 1),
+            nn.Conv1d(window_size, window_size, 1)
         )
         self.gru = nn.GRU(1, hidden_size)
 

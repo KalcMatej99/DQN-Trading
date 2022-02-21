@@ -261,45 +261,6 @@ class SensitivityRun:
                                                   self.transaction_cost)
 
     def load_agents(self):
-        if args.use_patterns:
-            self.dqn_pattern = DeepRL(self.data_loader,
-                                    self.dataTrain_patternBased,
-                                    self.dataTest_patternBased,
-                                    self.dataset_name,
-                                    None,
-                                    self.window_size,
-                                    self.transaction_cost,
-                                    BATCH_SIZE=self.batch_size,
-                                    GAMMA=self.gamma,
-                                    ReplayMemorySize=self.replay_memory_size,
-                                    TARGET_UPDATE=self.target_update,
-                                    n_step=self.n_step)
-
-        self.dqn_vanilla = DeepRL(self.data_loader,
-                                  self.dataTrain_autoPatternExtractionAgent,
-                                  self.dataTest_autoPatternExtractionAgent,
-                                  self.dataset_name,
-                                  self.STATE_MODE_OHLC,
-                                  self.window_size,
-                                  self.transaction_cost,
-                                  BATCH_SIZE=self.batch_size,
-                                  GAMMA=self.gamma,
-                                  ReplayMemorySize=self.replay_memory_size,
-                                  TARGET_UPDATE=self.target_update,
-                                  n_step=self.n_step)
-
-        self.dqn_candle_rep = DeepRL(self.data_loader,
-                                     self.dataTrain_autoPatternExtractionAgent_candle_rep,
-                                     self.dataTest_autoPatternExtractionAgent_candle_rep,
-                                     self.dataset_name,
-                                     self.STATE_MODE_CANDLE_REP,
-                                     self.window_size,
-                                     self.transaction_cost,
-                                     BATCH_SIZE=self.batch_size,
-                                     GAMMA=self.gamma,
-                                     ReplayMemorySize=self.replay_memory_size,
-                                     TARGET_UPDATE=self.target_update,
-                                     n_step=self.n_step)
 
         self.dqn_windowed = DeepRL(self.data_loader,
                                    self.dataTrain_autoPatternExtractionAgent_windowed,
@@ -313,49 +274,6 @@ class SensitivityRun:
                                    ReplayMemorySize=self.replay_memory_size,
                                    TARGET_UPDATE=self.target_update,
                                    n_step=self.n_step)
-
-        if args.use_patterns:
-            self.mlp_pattern = SimpleMLP(self.data_loader,
-                                        self.dataTrain_patternBased,
-                                        self.dataTest_patternBased,
-                                        self.dataset_name,
-                                        None,
-                                        self.window_size,
-                                        self.transaction_cost,
-                                        self.feature_size,
-                                        BATCH_SIZE=self.batch_size,
-                                        GAMMA=self.gamma,
-                                        ReplayMemorySize=self.replay_memory_size,
-                                        TARGET_UPDATE=self.target_update,
-                                        n_step=self.n_step)
-
-        self.mlp_vanilla = SimpleMLP(self.data_loader,
-                                     self.dataTrain_autoPatternExtractionAgent,
-                                     self.dataTest_autoPatternExtractionAgent,
-                                     self.dataset_name,
-                                     self.STATE_MODE_OHLC,
-                                     self.window_size,
-                                     self.transaction_cost,
-                                     self.feature_size,
-                                     BATCH_SIZE=self.batch_size,
-                                     GAMMA=self.gamma,
-                                     ReplayMemorySize=self.replay_memory_size,
-                                     TARGET_UPDATE=self.target_update,
-                                     n_step=self.n_step)
-
-        self.mlp_candle_rep = SimpleMLP(self.data_loader,
-                                        self.dataTrain_autoPatternExtractionAgent_candle_rep,
-                                        self.dataTest_autoPatternExtractionAgent_candle_rep,
-                                        self.dataset_name,
-                                        self.STATE_MODE_CANDLE_REP,
-                                        self.window_size,
-                                        self.transaction_cost,
-                                        self.feature_size,
-                                        BATCH_SIZE=self.batch_size,
-                                        GAMMA=self.gamma,
-                                        ReplayMemorySize=self.replay_memory_size,
-                                        TARGET_UPDATE=self.target_update,
-                                        n_step=self.n_step)
 
         self.mlp_windowed = SimpleMLP(self.data_loader,
                                       self.dataTrain_autoPatternExtractionAgent_windowed,
@@ -450,6 +368,10 @@ class SensitivityRun:
                                  window_size=self.window_size)
 
     def train(self):
+        self.cnn_attn.train(self.n_episodes)     
+        self.cnn_attn.test().evaluate()  
+        self.cnn_gru.train(self.n_episodes)
+        self.cnn_gru.test().evaluate()
         self.dqn_windowed.train(self.n_episodes)
         self.dqn_windowed.test().evaluate()
         self.mlp_windowed.train(self.n_episodes)
@@ -461,11 +383,7 @@ class SensitivityRun:
         self.gru.train(self.n_episodes)
         self.gru.test().evaluate()
         self.deep_cnn.train(self.n_episodes)
-        self.deep_cnn.test().evaluate()
-        self.cnn_gru.train(self.n_episodes)
-        self.cnn_gru.test().evaluate()
-        self.cnn_attn.train(self.n_episodes)     
-        self.cnn_attn.test().evaluate()   
+        self.deep_cnn.test().evaluate() 
 
     def evaluate_sensitivity(self):
         key = None

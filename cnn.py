@@ -350,8 +350,8 @@ if __name__ == '__main__':
 
     for window_size in window_size_list:
         for n_step in n_step_list:
-            run.window_size = window_size
-            run.n_step = n_step
+            run.window_size = 10#window_size
+            run.n_step = 10#n_step
             run.window_size_n_step = f"{window_size}_{n_step}"
 
             run.reset()
