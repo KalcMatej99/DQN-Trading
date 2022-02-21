@@ -56,7 +56,7 @@ class DataAutoPatternExtractionAgent(Data):
             numb_of_elem = 1
             self.state_size = window_size * (numb_of_elem)
             temp_states = []
-            for i, row in self.data.loc[:, ['volume', 'close']].iterrows():
+            for i, row in self.data.loc[:, ['close']].iterrows():
                 if i < window_size - 1:
                     temp_states += [row.close]
                 else:
