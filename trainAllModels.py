@@ -149,11 +149,7 @@ class SensitivityRun:
                                     'CNN-GRU': {},
                                     'CNN-ATTN': {}}
         else:
-            self.test_portfolios = {'DQN-vanilla': {},
-                                    'DQN-candlerep': {},
-                                    'DQN-windowed': {},
-                                    'MLP-vanilla': {},
-                                    'MLP-candlerep': {},
+            self.test_portfolios = {'DQN-windowed': {},
                                     'MLP-windowed': {},
                                     'CNN1d': {},
                                     'CNN2d': {},
@@ -376,8 +372,8 @@ class SensitivityRun:
                                       n_step=self.n_step)
 
         self.cnn1d = SimpleCNN(self.data_loader,
-                               self.dataTrain_autoPatternExtractionAgent,
-                               self.dataTest_autoPatternExtractionAgent,
+                               self.dataTrain_autoPatternExtractionAgent_windowed,
+                               self.dataTest_autoPatternExtractionAgent_windowed,
                                self.dataset_name,
                                self.STATE_MODE_OHLC,
                                self.window_size,
@@ -456,20 +452,6 @@ class SensitivityRun:
     def train(self):
         self.dqn_windowed.train(self.n_episodes)
         self.dqn_windowed.test().evaluate()
-        self.mlp_candle_rep.train(self.n_episodes)
-        self.mlp_candle_rep.test().evaluate()
-        if args.use_patterns:
-            self.dqn_pattern.train(self.n_episodes)
-        self.dqn_vanilla.train(self.n_episodes)
-        self.dqn_vanilla.test().evaluate()
-        self.dqn_candle_rep.train(self.n_episodes)
-        self.dqn_candle_rep.test().evaluate()
-
-        if args.use_patterns:
-            self.mlp_pattern.train(self.n_episodes)
-            self.mlp_pattern.test().evaluate()
-        self.mlp_vanilla.train(self.n_episodes)
-        self.mlp_vanilla.test().evaluate()
         self.mlp_windowed.train(self.n_episodes)
         self.mlp_windowed.test().evaluate()
         self.cnn1d.train(self.n_episodes)
@@ -500,18 +482,7 @@ class SensitivityRun:
         elif self.evaluation_parameter == 'n_episodes':
             key = self.n_episodes
 
-        if args.use_patterns:
-            self.test_portfolios['DQN-pattern'][key] = self.dqn_pattern.test().get_daily_portfolio_value()
-        self.test_portfolios['DQN-vanilla'][key] = self.dqn_vanilla.test().get_daily_portfolio_value()
-        self.test_portfolios['DQN-candlerep'][
-            key] = self.dqn_candle_rep.test().get_daily_portfolio_value()
         self.test_portfolios['DQN-windowed'][key] = self.dqn_windowed.test().get_daily_portfolio_value()
-
-        if args.use_patterns:
-            self.test_portfolios['MLP-pattern'][key] = self.mlp_pattern.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-vanilla'][key] = self.mlp_vanilla.test().get_daily_portfolio_value()
-        self.test_portfolios['MLP-candlerep'][
-            key] = self.mlp_candle_rep.test().get_daily_portfolio_value()
         self.test_portfolios['MLP-windowed'][key] = self.mlp_windowed.test().get_daily_portfolio_value()
         self.test_portfolios['CNN1d'][key] = self.cnn1d.test().get_daily_portfolio_value()
         self.test_portfolios['CNN2d'][key] = self.cnn2d.test().get_daily_portfolio_value()
