@@ -23,7 +23,7 @@ class DataSequential(Data):
                          transaction_cost=transaction_cost)
 
         self.data_kind = 'LSTMSequential'
-        self.state_size = 4
+        self.state_size = 1
 
         self.data_preprocessed = data.loc[:, ['close']].values
 
