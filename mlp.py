@@ -214,8 +214,8 @@ class SensitivityRun:
         self.save_portfolios()
 
 if __name__ == '__main__':
-    n_step_list = [1, 2, 4, 8, 24, 48]
-    window_size_list = [24, 48]
+    n_step_list = [24, 1, 8, 48]
+    window_size_list = [48, 24]
     dataset_name = args.dataset_name
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
     feature_size = 64
@@ -226,7 +226,7 @@ if __name__ == '__main__':
     replay_memory_size_default = 32
     n_step_default = 8
     window_size_default = 10
-    n_episodes_default = 80
+    n_episodes_default = 160
 
     pbar = tqdm(len(window_size_list) * len(n_step_list))
 
