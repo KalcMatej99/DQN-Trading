@@ -362,8 +362,7 @@ class SensitivityRun:
 
 if __name__ == '__main__':
     n_step_list = [1, 2, 4, 8, 24, 48, 92, 92 * 2]
-    window_size_list = [4, 8, 24, 48, 92, 92 * 2]
-    n_episodes_list = [5, 20, 50]
+    window_size_list = [8, 24, 48, 92, 92 * 2]
     dataset_name = args.dataset_name
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
     feature_size = 64
@@ -372,9 +371,9 @@ if __name__ == '__main__':
     gamma_default = 0.8
     batch_size_default = 16
     replay_memory_size_default = 32
-    n_step_default = 8
-    window_size_default = 8
-    n_episodes_default = 15
+    n_step_default = 1
+    window_size_default = 24
+    n_episodes_default = 50
 
     pbar = tqdm(len(window_size_list) + len(n_step_list) + len(n_episodes_list))
 
@@ -394,28 +393,6 @@ if __name__ == '__main__':
         
     for window_size in window_size_list:
         run.window_size = window_size
-        run.reset()
-        run.train()
-        run.evaluate_sensitivity()
-        pbar.update(1)
-        run.save_experiment()
-        
-    run = SensitivityRun(
-        dataset_name,
-        gamma_default,
-        batch_size_default,
-        replay_memory_size_default,
-        feature_size,
-        target_update,
-        n_episodes_default,
-        n_step_default,
-        window_size_default,
-        device,
-        evaluation_parameter='n_episodes',
-        transaction_cost=0.001)
-        
-    for n_episodes in n_episodes_list:
-        run.n_episodes = n_episodes
         run.reset()
         run.train()
         run.evaluate_sensitivity()

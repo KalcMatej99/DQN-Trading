@@ -1,6 +1,6 @@
 from .Data import Data
 import numpy as np
-
+from sklearn.preprocessing import MinMaxScaler
 
 class DataAutoPatternExtractionAgent(Data):
     def __init__(self, data, state_mode, action_name, device, gamma, n_step=4, batch_size=50, window_size=1,
@@ -62,7 +62,10 @@ class DataAutoPatternExtractionAgent(Data):
                 else:
                     # The trend of the k'th index shows the trend of the whole candles inside the window
                     temp_states += [row.close]
-                    self.states.append(np.array(temp_states))
+                    current_state = np.array(temp_states).copy()
+                    scaler = MinMaxScaler(feature_range=(-1, 1))
+                    scaler.fit(current_state.reshape(-1, 1))
+                    self.states.append(scaler.transform(current_state.reshape(-1, 1)).reshape(1, -1)[0])
                     # removing the elements from the vector
                     temp_states = temp_states[(numb_of_elem-1):-1]
 
