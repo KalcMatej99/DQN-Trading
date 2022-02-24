@@ -362,7 +362,7 @@ class SensitivityRun:
 
 if __name__ == '__main__':
     n_step_list = [1, 2, 4, 8, 24]
-    window_size_list = [8, 24, 48, 92, 92 * 2]
+    window_size_list = [8, 24, 48, 92]
     dataset_name = args.dataset_name
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
     feature_size = 64
