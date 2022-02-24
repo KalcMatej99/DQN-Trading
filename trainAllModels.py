@@ -361,7 +361,7 @@ class SensitivityRun:
         self.save_portfolios()
 
 if __name__ == '__main__':
-    n_step_list = [1, 2, 4, 8, 24, 48, 92, 92 * 2]
+    n_step_list = [1, 2, 4, 8, 24]
     window_size_list = [8, 24, 48, 92, 92 * 2]
     dataset_name = args.dataset_name
     device = torch.device("cuda" if args.cuda and torch.cuda.is_available() else "cpu")
@@ -375,7 +375,7 @@ if __name__ == '__main__':
     window_size_default = 24
     n_episodes_default = 50
 
-    pbar = tqdm(len(window_size_list) + len(n_step_list) + len(n_episodes_list))
+    pbar = tqdm(len(window_size_list) + len(n_step_list))
 
     run = SensitivityRun(
         dataset_name,
@@ -420,9 +420,5 @@ if __name__ == '__main__':
         run.evaluate_sensitivity()
         pbar.update(1)
         run.save_experiment()
-    
-
-
-
     
     pbar.close()
